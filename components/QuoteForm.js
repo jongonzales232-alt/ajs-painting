@@ -29,8 +29,7 @@ if (!response.ok) {
 }
 
 event.currentTarget.reset();
-window.alert("Your quote request has been sent. AJ's Painting will get back to you soon.");
-window.location.href = "/";
+window.location.href = "/thank-you";
   }
 
   return (
