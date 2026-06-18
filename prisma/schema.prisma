@@ -98,6 +98,14 @@ model GalleryPhoto {
   createdAt   DateTime @default(now())
 }
 
+model SiteAsset {
+  key       String   @id
+  url       String
+  filename  String
+  alt       String   @default("")
+  updatedAt DateTime @updatedAt
+}
+
 model RateLimitBucket {
   key     String   @id
   count   Int      @default(0)

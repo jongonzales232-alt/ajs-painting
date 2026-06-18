@@ -266,6 +266,14 @@ textarea {
   background: linear-gradient(135deg, #243145, #d69a2d);
 }
 
+.contact-business-image {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-top: 18px;
+}
+
 .gallery-card-body {
   padding: 16px;
 }
@@ -284,6 +292,17 @@ textarea {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
+}
+
+.admin-subpanel {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  margin: 18px 0;
+  padding: 18px;
+}
+
+.admin-subpanel h3 {
+  margin: 0 0 6px;
 }
 
 .field {

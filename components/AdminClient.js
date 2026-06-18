@@ -11,9 +11,10 @@ function dateInputValue(value) {
   return new Date(value).toISOString().slice(0, 10);
 }
 
-export default function AdminClient({ initialLeads, appointments, galleryPhotos, availability, blockedDays, stats, timeZone }) {
+export default function AdminClient({ initialLeads, appointments, galleryPhotos, availability, blockedDays, siteAssets, stats, timeZone }) {
   const [leads, setLeads] = useState(initialLeads);
   const [photos, setPhotos] = useState(galleryPhotos);
+  const [assets, setAssets] = useState(siteAssets);
   const [slots, setSlots] = useState(availability);
   const [blocks, setBlocks] = useState(blockedDays);
   const [query, setQuery] = useState("");
@@ -75,6 +76,24 @@ export default function AdminClient({ initialLeads, appointments, galleryPhotos,
       setMessage("Gallery photo updated.");
     } else {
       setMessage(result.error || "Photo update failed.");
+    }
+  }
+
+  async function updateSiteAsset(event, key) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    formData.set("key", key);
+    const response = await fetch("/api/admin/site-assets", { method: "PATCH", body: formData });
+    const result = await response.json();
+    if (response.ok) {
+      setAssets((current) => {
+        const next = current.filter((asset) => asset.key !== key);
+        return [...next, result.asset];
+      });
+      event.currentTarget.reset();
+      setMessage("Site image updated.");
+    } else {
+      setMessage(result.error || "Site image update failed.");
     }
   }
 
@@ -149,6 +168,8 @@ export default function AdminClient({ initialLeads, appointments, galleryPhotos,
     await fetch("/api/admin/logout", { method: "POST" });
     window.location.href = "/admin/login";
   }
+
+  const contactBusinessImage = assets.find((asset) => asset.key === "contactBusinessImage");
 
   return (
     <div className="admin-shell">
@@ -246,6 +267,20 @@ export default function AdminClient({ initialLeads, appointments, galleryPhotos,
           <div id="gallery" className="admin-panel">
             <h2>Gallery Photos</h2>
             <p className="muted">The newest three gallery photos appear in the Recent Work section on the home page.</p>
+            <div className="admin-subpanel">
+              <h3>Contact Page Business Image</h3>
+              <p className="muted">This controls the large image under Business information on the Contact page.</p>
+              <SafeImage
+                className="contact-business-image"
+                src={contactBusinessImage?.url}
+                alt={contactBusinessImage?.alt || "Contact page business image"}
+              />
+              <form onSubmit={(event) => updateSiteAsset(event, "contactBusinessImage")} className="form-grid" style={{ marginTop: 14 }}>
+                <div className="field full"><label>Image description</label><input name="alt" defaultValue={contactBusinessImage?.alt || ""} /></div>
+                <div className="field full"><label>Replace image</label><input name="photo" type="file" accept="image/*" required /></div>
+                <button className="button" type="submit">Save Contact Image</button>
+              </form>
+            </div>
             <form onSubmit={uploadGallery} className="form-grid">
               <div className="field"><label>Title</label><input name="title" /></div>
               <div className="field"><label>Job type</label><input name="jobType" /></div>

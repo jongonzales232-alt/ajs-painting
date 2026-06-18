@@ -14,7 +14,7 @@ export default async function AdminPage() {
   if (!(await isAdmin())) redirect("/admin/login");
 
   const now = new Date();
-  const [leads, appointments, galleryPhotos, availability, blockedDays, statsRaw] = await Promise.all([
+  const [leads, appointments, galleryPhotos, availability, blockedDays, siteAssets, statsRaw] = await Promise.all([
     prisma.lead.findMany({
       orderBy: { createdAt: "desc" },
       include: { photos: true, followUpNotes: { orderBy: { createdAt: "asc" } } }
@@ -23,6 +23,7 @@ export default async function AdminPage() {
     prisma.galleryPhoto.findMany({ orderBy: { createdAt: "desc" } }),
     prisma.availabilitySlot.findMany({ where: { active: true }, orderBy: [{ weekday: "asc" }, { startTime: "asc" }] }),
     prisma.blockedDay.findMany({ where: { date: { gte: now } }, orderBy: { date: "asc" } }),
+    prisma.siteAsset.findMany(),
     Promise.all([
       prisma.lead.count({ where: { status: "NEW" } }),
       prisma.appointment.count({ where: { startsAt: { gte: now } } }),
@@ -45,6 +46,7 @@ export default async function AdminPage() {
       galleryPhotos={JSON.parse(JSON.stringify(galleryPhotos))}
       availability={JSON.parse(JSON.stringify(availability))}
       blockedDays={JSON.parse(JSON.stringify(blockedDays))}
+      siteAssets={JSON.parse(JSON.stringify(siteAssets))}
       stats={stats}
       timeZone={businessTimeZone()}
     />
