@@ -22,12 +22,12 @@ export default function QuoteForm() {
       return;
     }
 
-  event.currentTarget.reset();
-window.alert("Your quote request has been sent. AJ's Painting will get back to you soon.");
-window.location.assign("/");
-}
+     event.currentTarget.reset();
+    window.alert("Your quote request has been sent. AJ's Painting will get back to you soon.");
+    window.location.assign("/");
+  }
 
-return (
+  return (
     <form className="form-card" onSubmit={submit}>
       <div className="form-grid">
         <div className="field">
