@@ -6,6 +6,8 @@
     "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "next start",
+    "render:build": "prisma generate && next build",
+    "render:start": "node scripts/render-start.mjs",
     "lint": "eslint .",
     "preflight:launch": "node scripts/preflight-launch.mjs",
     "clean:test-data": "node scripts/clean-test-data.mjs",
@@ -15,8 +17,6 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
-    "@next/swc-wasm-nodejs": "^15.5.19",
-    "@next/swc-win32-x64-msvc": "^15.5.19",
     "@prisma/client": "^6.9.0",
     "next": "^15.3.3",
     "prisma": "^6.9.0",
