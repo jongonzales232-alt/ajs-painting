@@ -14,17 +14,23 @@ export default function QuoteForm() {
 
     const formData = new FormData(event.currentTarget);
     const response = await fetch("/api/quote", { method: "POST", body: formData });
-    const result = await response.json();
 
-    setLoading(false);
-    if (!response.ok) {
-      setStatus({ type: "error", text: result.error || "Please check the form and try again." });
-      return;
-    }
+let result = {};
+try {
+  result = await response.json();
+} catch {
+  result = {};
+}
 
-     event.currentTarget.reset();
-    window.alert("Your quote request has been sent. AJ's Painting will get back to you soon.");
-    window.location.assign("/");
+setLoading(false);
+if (!response.ok) {
+  setStatus({ type: "error", text: result.error || "Please check the form and try again." });
+  return;
+}
+
+event.currentTarget.reset();
+window.alert("Your quote request has been sent. AJ's Painting will get back to you soon.");
+window.location.href = "/";
   }
 
   return (
