@@ -1,0 +1,12 @@
+node_modules
+.next
+.env
+.env.local
+.online
+start-local.cmd
+dev.db
+prisma/dev.db
+public/uploads/*
+!public/uploads/.gitkeep
+storage/uploads/*
+!storage/uploads/.gitkeep
