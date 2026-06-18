@@ -22,11 +22,9 @@ export default function QuoteForm() {
       return;
     }
 
-    event.currentTarget.reset();
-setStatus({ type: "success", text: "Your quote request has been sent. AJ's Painting will get back to you soon." });
-window.setTimeout(() => {
-  window.location.href = "/";
-}, 2500);
+  event.currentTarget.reset();
+window.alert("Your quote request has been sent. AJ's Painting will get back to you soon.");
+window.location.assign("/");
 }
 
 return (
