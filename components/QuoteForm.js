@@ -23,8 +23,10 @@ export default function QuoteForm() {
     }
 
     event.currentTarget.reset();
-    setStatus({ type: "success", text: "Thank you. AJ's Painting received your request and will contact you soon." });
-  }
+   setStatus({ type: "success", text: "Your quote request has been sent. AJ's Painting will get back to you soon." });
+window.setTimeout(() => {
+  window.location.href = "/";
+}, 2500);
 
   return (
     <form className="form-card" onSubmit={submit}>
