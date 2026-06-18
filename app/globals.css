@@ -39,6 +39,10 @@ img {
   display: block;
 }
 
+.muted {
+  color: var(--muted);
+}
+
 button,
 input,
 select,

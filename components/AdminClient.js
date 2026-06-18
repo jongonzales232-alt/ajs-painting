@@ -6,6 +6,11 @@ import SafeImage from "./SafeImage";
 const statuses = ["NEW", "CONTACTED", "SCHEDULED", "QUOTED", "WON", "LOST", "COMPLETED"];
 const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
+function dateInputValue(value) {
+  if (!value) return "";
+  return new Date(value).toISOString().slice(0, 10);
+}
+
 export default function AdminClient({ initialLeads, appointments, galleryPhotos, availability, blockedDays, stats, timeZone }) {
   const [leads, setLeads] = useState(initialLeads);
   const [photos, setPhotos] = useState(galleryPhotos);
@@ -56,6 +61,20 @@ export default function AdminClient({ initialLeads, appointments, galleryPhotos,
       setMessage("Gallery photo uploaded.");
     } else {
       setMessage(result.error || "Upload failed.");
+    }
+  }
+
+  async function updateGallery(event, photoId) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    formData.set("id", photoId);
+    const response = await fetch("/api/admin/gallery", { method: "PATCH", body: formData });
+    const result = await response.json();
+    if (response.ok) {
+      setPhotos((current) => current.map((photo) => (photo.id === photoId ? result.photo : photo)));
+      setMessage("Gallery photo updated.");
+    } else {
+      setMessage(result.error || "Photo update failed.");
     }
   }
 
@@ -226,6 +245,7 @@ export default function AdminClient({ initialLeads, appointments, galleryPhotos,
         <section className="admin-grid" style={{ marginTop: 22 }}>
           <div id="gallery" className="admin-panel">
             <h2>Gallery Photos</h2>
+            <p className="muted">The newest three gallery photos appear in the Recent Work section on the home page.</p>
             <form onSubmit={uploadGallery} className="form-grid">
               <div className="field"><label>Title</label><input name="title" /></div>
               <div className="field"><label>Job type</label><input name="jobType" /></div>
@@ -239,8 +259,15 @@ export default function AdminClient({ initialLeads, appointments, galleryPhotos,
                 <article className="gallery-card" key={photo.id}>
                   <SafeImage src={photo.url} alt={photo.title || "Gallery photo"} />
                   <div className="gallery-card-body">
-                    <h3>{photo.title || "Project photo"}</h3>
-                    <button className="button-light" onClick={() => deletePhoto(photo.id)}>Delete</button>
+                    <form onSubmit={(event) => updateGallery(event, photo.id)} className="form-grid">
+                      <div className="field full"><label>Title</label><input name="title" defaultValue={photo.title || ""} /></div>
+                      <div className="field full"><label>Description</label><textarea name="description" defaultValue={photo.description || ""} /></div>
+                      <div className="field"><label>Job type</label><input name="jobType" defaultValue={photo.jobType || ""} /></div>
+                      <div className="field"><label>Job date</label><input name="jobDate" type="date" defaultValue={dateInputValue(photo.jobDate)} /></div>
+                      <div className="field full"><label>Replace photo</label><input name="photo" type="file" accept="image/*" /></div>
+                      <button className="button" type="submit">Save Changes</button>
+                      <button className="button-light" type="button" onClick={() => deletePhoto(photo.id)}>Delete</button>
+                    </form>
                   </div>
                 </article>
               ))}

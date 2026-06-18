@@ -31,6 +31,48 @@ export async function POST(request) {
   }
 }
 
+export async function PATCH(request) {
+  const authError = await requireAdmin(request, { mutation: true });
+  if (authError) return authError;
+
+  try {
+    const formData = await request.formData();
+    const id = String(formData.get("id") || "");
+    if (!id) return NextResponse.json({ error: "Missing photo id." }, { status: 400 });
+
+    const existing = await prisma.galleryPhoto.findUnique({ where: { id } });
+    if (!existing) return NextResponse.json({ error: "Photo not found." }, { status: 404 });
+
+    const file = formData.get("photo");
+    const replacement = file && file.size > 0 ? await saveUpload(file, "gallery") : null;
+
+    const photo = await prisma.galleryPhoto.update({
+      where: { id },
+      data: {
+        ...(replacement || {}),
+        title: String(formData.get("title") || "").trim() || null,
+        description: String(formData.get("description") || "").trim() || null,
+        jobType: String(formData.get("jobType") || "").trim() || null,
+        jobDate: formData.get("jobDate") ? new Date(String(formData.get("jobDate"))) : null
+      }
+    });
+
+    if (replacement && existing.filename) {
+      try {
+        await fs.unlink(getPublicUploadPath("gallery", existing.filename));
+      } catch (error) {
+        if (error.code !== "ENOENT") {
+          console.error("Old gallery file cleanup failed.", { id, filename: existing.filename, error: error.message });
+        }
+      }
+    }
+
+    return NextResponse.json({ photo });
+  } catch (error) {
+    return NextResponse.json({ error: error.message || "Photo update failed." }, { status: 400 });
+  }
+}
+
 export async function DELETE(request) {
   const authError = await requireAdmin(request, { mutation: true });
   if (authError) return authError;
