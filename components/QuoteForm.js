@@ -9,27 +9,29 @@ export default function QuoteForm() {
   async function submit(event) {
     event.preventDefault();
     if (loading) return;
+
+    const form = event.currentTarget;
     setLoading(true);
     setStatus({ type: "", text: "" });
 
-    const formData = new FormData(event.currentTarget);
+    const formData = new FormData(form);
     const response = await fetch("/api/quote", { method: "POST", body: formData });
 
-let result = {};
-try {
-  result = await response.json();
-} catch {
-  result = {};
-}
+    let result = {};
+    try {
+      result = await response.json();
+    } catch {
+      result = {};
+    }
 
-setLoading(false);
-if (!response.ok) {
-  setStatus({ type: "error", text: result.error || "Please check the form and try again." });
-  return;
-}
+    setLoading(false);
+    if (!response.ok) {
+      setStatus({ type: "error", text: result.error || "Please check the form and try again." });
+      return;
+    }
 
-event.currentTarget.reset();
-window.location.href = "/thank-you";
+    form.reset();
+    window.location.href = "/thank-you";
   }
 
   return (
