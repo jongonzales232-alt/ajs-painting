@@ -1,6 +1,7 @@
 import PublicLayout from "../../components/PublicLayout";
 import SafeImage from "../../components/SafeImage";
 import { prisma } from "../../lib/prisma";
+import Link from "next/link";
 
 export const metadata = {
   title: "Project Gallery",
@@ -16,8 +17,9 @@ export default async function GalleryPage() {
     <PublicLayout>
       <section className="page-title">
         <div className="container">
+          <p className="eyebrow">Careful work, visible results</p>
           <h1>Project Gallery</h1>
-          <p>Completed job photos uploaded by AJ&apos;s Painting.</p>
+          <p>A closer look at completed interior, exterior, cabinet, deck, fence, residential, and commercial projects.</p>
         </div>
       </section>
       <section className="section">
@@ -37,9 +39,14 @@ export default async function GalleryPage() {
             ))}
           </div>
           {photos.length === 0 ? (
-            <div className="info-panel">
-              <h3>Gallery coming soon</h3>
-              <p>AJ&apos;s Painting can upload completed job photos from the admin dashboard.</p>
+            <div className="empty-state gallery-empty">
+              <p className="eyebrow">New portfolio photos are being prepared</p>
+              <h2>Have a project in mind today?</h2>
+              <p>You do not have to wait for the gallery. Send a few details and photos, and we&apos;ll talk through your project.</p>
+              <div className="actions">
+                <Link className="button" href="/quote">Request a Free Quote</Link>
+                <Link className="button-light" href="/services">Explore Services</Link>
+              </div>
             </div>
           ) : null}
         </div>

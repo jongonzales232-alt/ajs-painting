@@ -1,4 +1,5 @@
 import PublicLayout from "../../components/PublicLayout";
+import Link from "next/link";
 
 export const metadata = {
   title: "Painting Services",
@@ -21,18 +22,43 @@ export default function ServicesPage() {
     <PublicLayout>
       <section className="page-title">
         <div className="container">
+          <p className="eyebrow">Prepared properly. Finished carefully.</p>
           <h1>Painting Services</h1>
-          <p>Professional prep, clear communication, and durable finishes for residential and commercial projects.</p>
+          <p>From one-room refreshes to full exterior projects, AJ&apos;s Painting brings more than 20 years of hands-on experience to every surface.</p>
         </div>
       </section>
       <section className="section">
         <div className="container grid grid-2">
           {services.map(([title, text]) => (
             <article className="service-card" key={title}>
-              <h3>{title}</h3>
+              <h2>{title}</h2>
               <p>{text}</p>
             </article>
           ))}
+        </div>
+      </section>
+      <section className="section section-blue">
+        <div className="container grid grid-2 service-expectations">
+          <div>
+            <p className="eyebrow">What professional looks like</p>
+            <h2>Respect for your property is part of the job</h2>
+          </div>
+          <ul className="check-list">
+            <li>Clear scope and straightforward next steps</li>
+            <li>Protection for floors, furniture, landscaping, and fixtures</li>
+            <li>Thoughtful cleaning, patching, sanding, and priming</li>
+            <li>An orderly work area and final walkthrough</li>
+          </ul>
+        </div>
+      </section>
+      <section className="section cta-section">
+        <div className="container cta-panel">
+          <div>
+            <p className="eyebrow">Let&apos;s talk about your project</p>
+            <h2>Not sure which service fits?</h2>
+            <p>Share a few photos and details. We&apos;ll help you identify the right next step.</p>
+          </div>
+          <Link className="button" href="/quote">Request a Free Quote</Link>
         </div>
       </section>
     </PublicLayout>

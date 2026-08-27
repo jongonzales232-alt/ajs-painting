@@ -10,24 +10,35 @@ export default function ContactForm() {
     event.preventDefault();
     if (loading) return;
     setLoading(true);
-    const formData = new FormData(event.currentTarget);
-    const response = await fetch("/api/contact", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(Object.fromEntries(formData))
-    });
-    const result = await response.json();
-    setLoading(false);
-    if (!response.ok) {
-      setStatus({ type: "error", text: result.error || "Message could not be sent." });
-      return;
+    const form = event.currentTarget;
+    setStatus({ type: "", text: "" });
+    try {
+      const formData = new FormData(form);
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(Object.fromEntries(formData))
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        setStatus({ type: "error", text: result.error || "Message could not be sent." });
+        return;
+      }
+      form.reset();
+      setStatus({ type: "success", text: "Message sent. AJ's Painting will follow up soon." });
+    } catch {
+      setStatus({ type: "error", text: "We could not send your message. Please check your connection and try again." });
+    } finally {
+      setLoading(false);
     }
-    event.currentTarget.reset();
-    setStatus({ type: "success", text: "Message sent. AJ's Painting will follow up soon." });
   }
 
   return (
-    <form className="form-card" onSubmit={submit}>
+    <form className="form-card" onSubmit={submit} aria-busy={loading}>
+      <div className="form-heading">
+        <h2>Send a message</h2>
+        <p>Share the basics and we&apos;ll follow up about the best next step.</p>
+      </div>
       <div className="form-grid">
         <div className="field">
           <label htmlFor="name">Name</label>
@@ -35,7 +46,7 @@ export default function ContactForm() {
         </div>
         <div className="field">
           <label htmlFor="phone">Phone</label>
-          <input id="phone" name="phone" required />
+          <input id="phone" name="phone" type="tel" required autoComplete="tel" />
         </div>
         <div className="field full">
           <label htmlFor="email">Email</label>
@@ -51,7 +62,7 @@ export default function ContactForm() {
           {loading ? "Sending..." : "Send Message"}
         </button>
       </div>
-      {status.text ? <div className={`status-message ${status.type}`}>{status.text}</div> : null}
+      {status.text ? <div className={`status-message ${status.type}`} role="status" aria-live="polite">{status.text}</div> : null}
     </form>
   );
 }

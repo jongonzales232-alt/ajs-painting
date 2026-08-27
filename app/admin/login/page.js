@@ -3,7 +3,7 @@ import LoginForm from "../../../components/LoginForm";
 import { isAdmin } from "../../../lib/auth";
 
 export const metadata = {
-  title: "Admin Login | AJ's Painting"
+  title: "Admin Login"
 };
 
 export const dynamic = "force-dynamic";

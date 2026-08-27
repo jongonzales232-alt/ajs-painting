@@ -14,28 +14,36 @@ export default function QuoteForm() {
     setLoading(true);
     setStatus({ type: "", text: "" });
 
-    const formData = new FormData(form);
-    const response = await fetch("/api/quote", { method: "POST", body: formData });
-
-    let result = {};
     try {
-      result = await response.json();
+      const formData = new FormData(form);
+      const response = await fetch("/api/quote", { method: "POST", body: formData });
+      let result = {};
+      try {
+        result = await response.json();
+      } catch {
+        result = {};
+      }
+
+      if (!response.ok) {
+        setStatus({ type: "error", text: result.error || "Please check the form and try again." });
+        return;
+      }
+
+      form.reset();
+      window.location.href = "/thank-you";
     } catch {
-      result = {};
+      setStatus({ type: "error", text: "We could not send your request. Please check your connection and try again." });
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
-    if (!response.ok) {
-      setStatus({ type: "error", text: result.error || "Please check the form and try again." });
-      return;
-    }
-
-    form.reset();
-    window.location.href = "/thank-you";
   }
 
   return (
-    <form className="form-card" onSubmit={submit}>
+    <form className="form-card" onSubmit={submit} aria-busy={loading}>
+      <div className="form-heading">
+        <h2>Project details</h2>
+        <p>Required fields are marked by the browser when you submit.</p>
+      </div>
       <div className="form-grid">
         <div className="field">
           <label htmlFor="fullName">Full name</label>
@@ -102,7 +110,7 @@ export default function QuoteForm() {
           {loading ? "Sending..." : "Request a Free Quote"}
         </button>
       </div>
-      {status.text ? <div className={`status-message ${status.type}`}>{status.text}</div> : null}
+      {status.text ? <div className={`status-message ${status.type}`} role="status" aria-live="polite">{status.text}</div> : null}
     </form>
   );
 }

@@ -19,6 +19,7 @@ export default function AdminClient({ initialLeads, appointments, galleryPhotos,
   const [blocks, setBlocks] = useState(blockedDays);
   const [query, setQuery] = useState("");
   const [message, setMessage] = useState("");
+  const [galleryUploading, setGalleryUploading] = useState(false);
 
   const filteredLeads = useMemo(() => {
     const term = query.toLowerCase();
@@ -53,15 +54,30 @@ export default function AdminClient({ initialLeads, appointments, galleryPhotos,
 
   async function uploadGallery(event) {
     event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const response = await fetch("/api/admin/gallery", { method: "POST", body: formData });
-    const result = await response.json();
-    if (response.ok) {
-      setPhotos((current) => [result.photo, ...current]);
-      event.currentTarget.reset();
-      setMessage("Gallery photo uploaded.");
-    } else {
-      setMessage(result.error || "Upload failed.");
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    const fileCount = formData.getAll("photos").filter((file) => file && file.size > 0).length;
+    if (!fileCount) {
+      setMessage("Please choose at least one photo.");
+      return;
+    }
+
+    setGalleryUploading(true);
+    setMessage(`Uploading ${fileCount} ${fileCount === 1 ? "photo" : "photos"}...`);
+    try {
+      const response = await fetch("/api/admin/gallery", { method: "POST", body: formData });
+      const result = await response.json();
+      if (response.ok) {
+        setPhotos((current) => [...result.photos, ...current]);
+        form.reset();
+        setMessage(`${result.photos.length} ${result.photos.length === 1 ? "photo" : "photos"} uploaded to the gallery.`);
+      } else {
+        setMessage(result.error || "Upload failed.");
+      }
+    } catch {
+      setMessage("Upload failed. Please check your connection and try again.");
+    } finally {
+      setGalleryUploading(false);
     }
   }
 
@@ -285,9 +301,10 @@ export default function AdminClient({ initialLeads, appointments, galleryPhotos,
               <div className="field"><label>Title</label><input name="title" /></div>
               <div className="field"><label>Job type</label><input name="jobType" /></div>
               <div className="field"><label>Job date</label><input name="jobDate" type="date" /></div>
-              <div className="field"><label>Photo</label><input name="photo" type="file" accept="image/*" required /></div>
+              <div className="field"><label>Photos</label><input name="photos" type="file" accept="image/*" multiple required /></div>
               <div className="field full"><label>Description</label><textarea name="description" /></div>
-              <button className="button" type="submit">Upload Photo</button>
+              <p className="muted field full">Choose multiple photos to upload them together. The project details above will be applied to every selected photo.</p>
+              <button className="button" type="submit" disabled={galleryUploading}>{galleryUploading ? "Uploading..." : "Upload Photos"}</button>
             </form>
             <div className="gallery-grid" style={{ marginTop: 18 }}>
               {photos.map((photo) => (

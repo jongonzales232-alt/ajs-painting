@@ -12,26 +12,36 @@ export default function ScheduleForm({ slots }) {
     setLoading(true);
     setStatus({ type: "", text: "" });
 
-    const formData = new FormData(event.currentTarget);
-    const response = await fetch("/api/schedule", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(Object.fromEntries(formData))
-    });
-    const result = await response.json();
+    const form = event.currentTarget;
+    try {
+      const formData = new FormData(form);
+      const response = await fetch("/api/schedule", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(Object.fromEntries(formData))
+      });
+      const result = await response.json().catch(() => ({}));
 
-    setLoading(false);
-    if (!response.ok) {
-      setStatus({ type: "error", text: result.error || "That appointment could not be booked." });
-      return;
+      if (!response.ok) {
+        setStatus({ type: "error", text: result.error || "That appointment could not be booked." });
+        return;
+      }
+
+      form.reset();
+      setStatus({ type: "success", text: "Your estimate appointment is booked. Please check your email for confirmation." });
+    } catch {
+      setStatus({ type: "error", text: "We could not book that time. Please check your connection and try again." });
+    } finally {
+      setLoading(false);
     }
-
-    event.currentTarget.reset();
-    setStatus({ type: "success", text: "Your estimate appointment is booked. Please check your email for confirmation." });
   }
 
   return (
-    <form className="form-card" onSubmit={submit}>
+    <form className="form-card" onSubmit={submit} aria-busy={loading}>
+      <div className="form-heading">
+        <h2>Estimate appointment</h2>
+        <p>Choose a time, then tell us where we&apos;re meeting you.</p>
+      </div>
       <div className="form-grid">
         <div className="field full">
           <label htmlFor="slot">Available appointment time</label>
@@ -70,8 +80,8 @@ export default function ScheduleForm({ slots }) {
           {loading ? "Booking..." : "Schedule an Estimate"}
         </button>
       </div>
-      {slots.length === 0 ? <div className="status-message error">No estimate times are available right now. Please request a quote or call directly.</div> : null}
-      {status.text ? <div className={`status-message ${status.type}`}>{status.text}</div> : null}
+      {slots.length === 0 ? <div className="status-message error" role="status">No estimate times are available right now. Please request a quote or call directly.</div> : null}
+      {status.text ? <div className={`status-message ${status.type}`} role="status" aria-live="polite">{status.text}</div> : null}
     </form>
   );
 }

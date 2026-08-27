@@ -5,7 +5,7 @@ import { prisma } from "../../lib/prisma";
 import { businessTimeZone } from "../../lib/time";
 
 export const metadata = {
-  title: "Admin Dashboard | AJ's Painting"
+  title: "Admin Dashboard"
 };
 
 export const dynamic = "force-dynamic";

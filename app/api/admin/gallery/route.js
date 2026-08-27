@@ -12,20 +12,33 @@ export async function POST(request) {
 
   try {
     const formData = await request.formData();
-    const upload = await saveUpload(formData.get("photo"), "gallery");
-    if (!upload) return NextResponse.json({ error: "Please choose a photo." }, { status: 400 });
+    const files = formData.getAll("photos").filter((file) => file && file.size > 0);
+    if (!files.length) return NextResponse.json({ error: "Please choose at least one photo." }, { status: 400 });
+    if (files.length > 20) return NextResponse.json({ error: "You can upload up to 20 photos at a time." }, { status: 400 });
 
-    const photo = await prisma.galleryPhoto.create({
-      data: {
-        ...upload,
+    const uploads = [];
+    try {
+      for (const file of files) {
+        uploads.push(await saveUpload(file, "gallery"));
+      }
+
+      const details = {
         title: String(formData.get("title") || "").trim() || null,
         description: String(formData.get("description") || "").trim() || null,
         jobType: String(formData.get("jobType") || "").trim() || null,
         jobDate: formData.get("jobDate") ? new Date(String(formData.get("jobDate"))) : null
-      }
-    });
+      };
+      const photos = await prisma.$transaction(
+        uploads.map((upload) => prisma.galleryPhoto.create({ data: { ...upload, ...details } }))
+      );
 
-    return NextResponse.json({ photo });
+      return NextResponse.json({ photos });
+    } catch (error) {
+      await Promise.all(
+        uploads.map((upload) => fs.unlink(getPublicUploadPath("gallery", upload.filename)).catch(() => {}))
+      );
+      throw error;
+    }
   } catch (error) {
     return NextResponse.json({ error: error.message || "Photo upload failed." }, { status: 400 });
   }
