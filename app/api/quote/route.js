@@ -54,6 +54,7 @@ export async function POST(request) {
 
     const ownerEmailResult = await sendEmail({
       to: ownerEmail(),
+      replyTo: lead.email,
       subject: `New quote request from ${lead.fullName}`,
       text: `${lead.fullName}\n${lead.phone}\n${lead.email}\n${lead.address}\n${lead.projectType}\n\n${lead.description}`,
       html: `<h2>New quote request</h2><p><strong>${escapeHtml(lead.fullName)}</strong></p><p>${escapeHtml(lead.phone)}<br>${escapeHtml(lead.email)}<br>${escapeHtml(lead.address)}</p><p><strong>Project:</strong> ${escapeHtml(lead.projectType)}</p><p>${nl2br(lead.description)}</p>`
@@ -62,6 +63,7 @@ export async function POST(request) {
     const business = getBusinessDetails();
     const customerEmailResult = await sendEmail({
       to: lead.email,
+      replyTo: business.email,
       subject: "We received your AJ's Painting quote request",
       text: `Hi ${lead.fullName},\n\nThank you for contacting AJ's Painting. We received your ${lead.projectType.toLowerCase()} request and will review the project details before following up.\n\nIf you need to add anything, call ${business.phone} or reply to this email.\n\nYour Project. Our Priority.`,
       html: `<h2>Thank you for contacting AJ&apos;s Painting</h2><p>Hi ${escapeHtml(lead.fullName)},</p><p>We received your ${escapeHtml(lead.projectType.toLowerCase())} request and will review the project details before following up.</p><p>If you need to add anything, call <a href="tel:${business.phone.replace(/[^+\d]/g, "")}">${escapeHtml(business.phone)}</a> or reply to this email.</p><p><strong>Your Project. Our Priority.</strong></p>`
