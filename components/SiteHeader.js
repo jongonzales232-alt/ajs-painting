@@ -3,14 +3,14 @@ import Image from "next/image";
 import { getBusinessDetails } from "../lib/business";
 
 export default function SiteHeader() {
-  const { phone } = getBusinessDetails();
+  const { phone, insurance } = getBusinessDetails();
 
   return (
     <header className="site-header">
       <div className="trust-bar">
         <div className="container trust-bar-inner">
           <span>Over 20 years of hands-on painting experience</span>
-          <span>Free estimates · Residential &amp; commercial</span>
+          <span>Free estimates · {insurance.detail}</span>
           {phone ? <a href={`tel:${phone.replace(/[^+\d]/g, "")}`}>{phone}</a> : null}
         </div>
       </div>

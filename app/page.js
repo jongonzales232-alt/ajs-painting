@@ -1,6 +1,7 @@
 import Link from "next/link";
 import PublicLayout from "../components/PublicLayout";
 import SafeImage from "../components/SafeImage";
+import { getBusinessDetails } from "../lib/business";
 import { prisma } from "../lib/prisma";
 
 export const metadata = {
@@ -24,6 +25,7 @@ const processSteps = [
 
 export default async function HomePage() {
   const photos = await prisma.galleryPhoto.findMany({ orderBy: { createdAt: "desc" }, take: 3 });
+  const { insurance } = getBusinessDetails();
 
   return (
     <PublicLayout>
@@ -46,7 +48,7 @@ export default async function HomePage() {
           <div><strong>20+</strong><span>Years of experience</span></div>
           <div><strong>Free</strong><span>Project estimates</span></div>
           <div><strong>Prep-first</strong><span>Workmanship</span></div>
-          <div><strong>Clear</strong><span>Communication</span></div>
+          <div><strong>{insurance.headline}</strong><span>{insurance.detail}</span></div>
         </div>
       </section>
 
