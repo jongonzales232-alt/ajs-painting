@@ -233,7 +233,19 @@ export default function AdminClient({ initialLeads, appointments, galleryPhotos,
                       <strong>{lead.fullName}</strong><br />
                       {lead.phone}<br />{lead.email}<br />{lead.address}
                     </td>
-                    <td>{lead.projectType}<br />{lead.surface}<br />{lead.projectSize}</td>
+                    <td>
+                      {lead.projectType}<br />{lead.surface}<br />{lead.projectSize}
+                      <p><strong>Preferred start:</strong> {lead.preferredStartDate ? new Date(lead.preferredStartDate).toISOString().slice(0, 10) : "Not specified"}</p>
+                      {lead.photos?.length ? <details>
+                        <summary>{lead.photos.length} project photos</summary>
+                        <div className="lead-photo-list">{lead.photos.map((photo, index) => (
+                          <a key={photo.id} href={photo.url} target="_blank" rel="noreferrer">
+                            <SafeImage src={photo.url} alt={`Project photo ${index + 1} for ${lead.fullName}`} />
+                            Open photo {index + 1}
+                          </a>
+                        ))}</div>
+                      </details> : <small>No photos attached</small>}
+                    </td>
                     <td>
                       <select value={lead.status} onChange={(event) => updateLead(lead.id, { status: event.target.value })}>
                         {statuses.map((status) => <option key={status}>{status}</option>)}

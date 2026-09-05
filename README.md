@@ -98,6 +98,16 @@ Every scheduled estimate generates an `.ics` calendar invite attachment for the 
 
 ## File Uploads
 
+Quote photos: customers can select up to 20 JPG, PNG, WebP, or GIF images (25 MB each before preparation), including multiple selection batches. The browser re-encodes them as JPEG, at most 2000 pixels on the longest edge and 750 KB each, before upload. HEIC/HEIF files need to be exported as JPG first. Photos stay in private storage and are attached to the owner notification; the customer confirmation includes the complete project summary and photo count.
+
+Quote emails include contact information, address, project type/area/size, preferred start date, complete description (up to 10,000 characters), consent, photo count, and quote reference. Admin quote rows display the preferred date and protected photo links. Failed email notifications are noted in the admin follow-up history and shown on the customer's saved-quote confirmation.
+
+Run the quote regression checks without sending email or using the live database:
+
+```bash
+node --experimental-vm-modules scripts/test-quote.mjs
+```
+
 Gallery images are stored locally under `public/uploads` and are public. Customer quote photos are stored locally under `storage/uploads` and are only served through protected admin routes.
 
 For production, replace both local upload locations with durable object storage such as S3, Cloudflare R2, or Vercel Blob before deploying at scale.

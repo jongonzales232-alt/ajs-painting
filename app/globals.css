@@ -1076,6 +1076,17 @@ th {
   }
 }
 
+.quote-fields { border: 0; padding: 0; margin: 0; min-width: 0; }
+.quote-photo-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+.quote-photo-list li { display: flex; align-items: center; gap: 12px; padding: 10px; border: 1px solid var(--line); border-radius: 8px; min-width: 0; }
+.quote-photo-list img { width: 64px; height: 64px; object-fit: cover; border-radius: 6px; flex-shrink: 0; }
+.quote-photo-list span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.quote-photo-list small { display: block; }
+.quote-photo-list button { padding: 8px 10px; }
+.lead-photo-list { display: grid; gap: 12px; margin-top: 12px; }
+.lead-photo-list img { width: 120px; height: 90px; object-fit: cover; display: block; }
+.quote-fields .field input[type="file"] { max-width: 100%; min-width: 0; }
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
