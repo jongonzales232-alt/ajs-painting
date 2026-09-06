@@ -13,6 +13,9 @@ import { quoteSummary } from "../../../lib/quote-email";
 export const runtime = "nodejs";
 
 function quoteText(value, label, maxLength) {
+  // Multipart forms encode textarea newlines as CRLF; match the browser's
+  // character count before enforcing the limit and storing the full description.
+  if (typeof value === "string") value = value.replace(/\r\n?/g, "\n");
   if (typeof value !== "string" || value.trim().length > maxLength) {
     throw new Error(`${label} must be text with no more than ${maxLength.toLocaleString()} characters.`);
   }

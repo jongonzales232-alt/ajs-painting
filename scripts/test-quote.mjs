@@ -114,6 +114,14 @@ try {
     assert.equal((await submit({ fullName: "x".repeat(121) })).status, 400);
     assert.equal(created.length, 0);
   });
+  await check("multiline description at the browser limit is accepted without losing content", async () => {
+    const description = "x\n".repeat(4999) + "xx";
+    assert.equal(description.length, 10000);
+    const result = await submit({ description });
+    assert.equal(result.status, 200, JSON.stringify(result.body));
+    assert.equal(created[0].description, description);
+    for (const email of emails) assert.ok(email.text.includes(description));
+  });
   await check("invalid calendar date rejected", async () => {
     assert.equal((await submit({ preferredStartDate: "2026-02-30" })).status, 400);
     assert.equal(created.length, 0);
