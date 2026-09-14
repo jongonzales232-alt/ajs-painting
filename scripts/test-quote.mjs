@@ -88,6 +88,25 @@ try {
     assert.equal(emails[0].attachments.length, 0);
     assert.ok(emails[0].text.includes("Not specified"));
   });
+  await check("town-only quote accepts omitted optional size and inferred project area", async () => {
+    const result = await submit({ address: "Waco", surface: null, projectSize: null, preferredStartDate: "" });
+    assert.equal(result.status, 200, JSON.stringify(result.body));
+    assert.equal(created[0].address, "Waco");
+    assert.equal(created[0].surface, "INTERIOR");
+    assert.equal(created[0].projectSize, "Not sure yet");
+    assert.ok(emails[0].text.includes("Project location (town, ZIP or address): Waco"));
+  });
+  await check("uncertain scope is stored honestly, not treated as both", async () => {
+    const result = await submit({ projectType: "Not sure yet", surface: null, projectSize: "" });
+    assert.equal(result.status, 200);
+    assert.equal(created[0].surface, "UNKNOWN");
+    assert.ok(emails[0].text.includes("Project area: Not sure yet"));
+  });
+  await check("combined project type and invalid project area", async () => {
+    assert.equal((await submit({ projectType: "Interior and exterior painting", surface: null })).status, 200);
+    assert.equal(created[0].surface, "BOTH");
+    assert.equal((await submit({ surface: "arbitrary" })).status, 400);
+  });
   await check("reject excessive photo count before saving", async () => {
     assert.equal((await submit({}, Array.from({ length: 21 }, () => photo()))).status, 400);
     assert.equal(created.length, 0); assert.equal(emails.length, 0);

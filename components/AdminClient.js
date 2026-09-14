@@ -340,6 +340,7 @@ export default function AdminClient({ initialLeads, appointments, galleryPhotos,
 
           <div id="availability" className="admin-panel">
             <h2>Availability</h2>
+            <p>Appointment start and end times use {timeZone}. Each time range is one estimate appointment.</p>
             <form onSubmit={addAvailability} className="form-grid">
               <div className="field full">
                 <label>Day</label>
@@ -373,7 +374,7 @@ export default function AdminClient({ initialLeads, appointments, galleryPhotos,
             </form>
             <ul>
               {blocks.map((day) => (
-                <li key={day.id}>{new Date(day.date).toLocaleDateString()} {day.reason} <button onClick={() => removeAvailability(day.id, "block")}>Remove</button></li>
+                <li key={day.id}>{new Date(day.date).toLocaleDateString("en-US", { timeZone: "UTC" })} {day.reason} <button onClick={() => removeAvailability(day.id, "block")}>Remove</button></li>
               ))}
             </ul>
           </div>

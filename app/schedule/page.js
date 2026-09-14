@@ -15,14 +15,14 @@ export default async function SchedulePage() {
 
   return (
     <PublicLayout>
-      <section className="page-title">
+      <section className="page-title inquiry-title">
         <div className="container">
           <p className="eyebrow">Choose a time that works for you</p>
           <h1>Schedule an Estimate</h1>
-          <p>Pick an available time for AJ&apos;s Painting to review your project and prepare a quote.</p>
+          <p>Book a free on-site estimate. Choose a date and time below; all appointments use Central Time.</p>
         </div>
       </section>
-      <section className="section">
+      <section className="section inquiry-section">
         <div className="container form-layout">
           <ScheduleForm slots={slots} />
           <aside className="form-aside">

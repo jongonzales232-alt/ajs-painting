@@ -9,14 +9,14 @@ export const metadata = {
 export default function QuotePage() {
   return (
     <PublicLayout>
-      <section className="page-title">
+      <section className="page-title inquiry-title">
         <div className="container">
           <p className="eyebrow">Free, straightforward project planning</p>
           <h1>Request a Free Quote</h1>
-          <p>Tell us what you&apos;re planning. The more detail you share, the more useful our first conversation can be.</p>
+          <p>Tell us what you&apos;d like painted and where. No measurements or full street address needed to get started.</p>
         </div>
       </section>
-      <section className="section">
+      <section className="section inquiry-section">
         <div className="container form-layout">
           <QuoteForm />
           <aside className="form-aside">

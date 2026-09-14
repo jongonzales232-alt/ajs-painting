@@ -1,13 +1,10 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "../../../../lib/admin-request";
 import { prisma } from "../../../../lib/prisma";
+import { isValidTimeRange } from "../../../../lib/time";
 
 function clean(value) {
   return String(value || "").trim();
-}
-
-function isValidTimeRange(startTime, endTime) {
-  return /^\d{2}:\d{2}$/.test(startTime) && /^\d{2}:\d{2}$/.test(endTime) && startTime < endTime;
 }
 
 export async function POST(request) {
@@ -30,8 +27,11 @@ export async function POST(request) {
 
   if (body.type === "block") {
     if (!clean(body.date)) return NextResponse.json({ error: "Please choose a date." }, { status: 400 });
-    const date = new Date(clean(body.date));
-    date.setHours(0, 0, 0, 0);
+    const dateValue = clean(body.date);
+    const date = new Date(`${dateValue}T00:00:00Z`);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateValue) || Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== dateValue) {
+      return NextResponse.json({ error: "Please choose a valid calendar date." }, { status: 400 });
+    }
     const blockedDay = await prisma.blockedDay.upsert({
       where: { date },
       update: { reason: clean(body.reason) },

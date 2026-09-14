@@ -547,6 +547,23 @@ textarea {
   font-size: 14px;
 }
 
+.trust-bar-inner a { white-space: nowrap; flex-shrink: 0; }
+.inquiry-title { padding-block: 36px 24px; }
+.section.inquiry-section { padding-top: 16px; }
+.schedule-fields { border: 0; margin: 0; padding: 0; min-width: 0; }
+.booking-summary { padding: 18px; background: var(--cream); border: 1px solid var(--line); border-radius: 10px; }
+.booking-summary p { margin: 6px 0; }
+.form-card .check-row { min-height: 44px; padding-block: 6px; }
+.form-card .check-row input { min-width: 20px; min-height: 20px; }
+@media (max-width: 600px) {
+  .inquiry-title { padding-block: 24px 16px; }
+  .inquiry-title h1 { font-size: 30px; }
+  .section.inquiry-section { padding-top: 8px; }
+  .inquiry-section .form-card { padding: 20px; }
+  .inquiry-section .form-heading { margin-bottom: 18px; }
+  .inquiry-section .actions .button { width: 100%; }
+}
+
 .form-aside {
   position: sticky;
   top: 150px;

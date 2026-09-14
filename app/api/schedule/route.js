@@ -7,10 +7,12 @@ import { escapeHtml } from "../../../lib/html";
 import { checkRateLimit } from "../../../lib/rate-limit";
 import { clean, requireEmail, requirePhone, requireText } from "../../../lib/validation";
 import { formatBusinessDateTime } from "../../../lib/time";
+import { getBusinessDetails } from "../../../lib/business";
 
 export const runtime = "nodejs";
 
 export async function POST(request) {
+  let appointment;
   try {
     const rateLimit = await checkRateLimit(request, "schedule", { limit: 8, windowMs: 60_000 });
     if (rateLimit.limited) {
@@ -32,41 +34,33 @@ export async function POST(request) {
     const address = requireText(body.address, "Address", 220);
     const notes = clean(body.notes, 1000);
 
-    const availableSlots = await getAvailableSlots();
-    const requestedSlotIsAvailable = availableSlots.some(
-      (slot) => slot.startsAt === startsAt.toISOString() && slot.endsAt === endsAt.toISOString()
-    );
-
-    if (!requestedSlotIsAvailable) {
-      return NextResponse.json({ error: "That appointment time is no longer available. Please choose another time." }, { status: 409 });
-    }
-
-    let appointment;
     try {
-      appointment = await prisma.appointment.create({
-        data: {
-          fullName,
-          phone,
-          email,
-          address,
-          notes,
-          startsAt,
-          endsAt
+      // Recheck and reserve inside the same SQLite transaction. This also
+      // prevents two different, overlapping start times being booked together.
+      appointment = await prisma.$transaction(async (tx) => {
+        const availableSlots = await getAvailableSlots(21, tx);
+        if (!availableSlots.some((slot) => slot.startsAt === startsAt.toISOString() && slot.endsAt === endsAt.toISOString())) {
+          const conflict = new Error("That appointment time is no longer available. Please choose another time.");
+          conflict.code = "SLOT_UNAVAILABLE";
+          throw conflict;
         }
+        return tx.appointment.create({ data: { fullName, phone, email, address, notes, startsAt, endsAt } });
       });
     } catch (error) {
-      if (error.code === "P2002") {
+      if (["P2002", "P2034", "P1008", "SLOT_UNAVAILABLE"].includes(error.code)) {
         return NextResponse.json({ error: "That appointment time was just booked. Please choose another time." }, { status: 409 });
       }
       throw error;
     }
 
     const invite = createIcsInvite(appointment);
-    const when = formatBusinessDateTime(startsAt, { dateStyle: "full", timeStyle: "short" });
+    const when = formatBusinessDateTime(startsAt, { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "2-digit", timeZoneName: "short" });
+    const business = getBusinessDetails();
     const attachments = [{ filename: "ajs-painting-estimate.ics", content: invite, contentType: "text/calendar" }];
 
     const ownerEmailResult = await sendEmail({
       to: ownerEmail(),
+      replyTo: appointment.email,
       subject: `New estimate appointment: ${appointment.fullName}`,
       text: `${when}\n${appointment.fullName}\n${appointment.phone}\n${appointment.email}\n${appointment.address}\n${appointment.notes}`,
       html: `<h2>New estimate appointment</h2><p><strong>${escapeHtml(when)}</strong></p><p>${escapeHtml(appointment.fullName)}<br>${escapeHtml(appointment.phone)}<br>${escapeHtml(appointment.email)}<br>${escapeHtml(appointment.address)}</p><p>${escapeHtml(appointment.notes)}</p>`,
@@ -75,14 +69,23 @@ export async function POST(request) {
 
     const customerEmailResult = await sendEmail({
       to: appointment.email,
+      replyTo: business.email,
       subject: "Your AJ's Painting estimate appointment",
-      text: `Your estimate appointment is scheduled for ${when}.`,
-      html: `<p>Your estimate appointment with AJ&apos;s Painting is scheduled for <strong>${escapeHtml(when)}</strong>.</p>`,
+      text: `Your estimate appointment is booked for ${when}.\nAddress: ${appointment.address}\nReference: ${appointment.id}\n${appointment.notes ? `Notes: ${appointment.notes}\n` : ""}Need to change or cancel? Reply to this email or call ${business.phone}.`,
+      html: `<p>Your estimate appointment with AJ&apos;s Painting is booked for <strong>${escapeHtml(when)}</strong>.</p><p>Address: ${escapeHtml(appointment.address)}<br>Reference: ${escapeHtml(appointment.id)}</p><p>Need to change or cancel? Reply to this email or call ${escapeHtml(business.phone)}.</p>`,
       attachments
     });
 
-    return NextResponse.json({ ok: true, id: appointment.id, email: { owner: ownerEmailResult, customer: customerEmailResult } });
+    return NextResponse.json({ ok: true, id: appointment.id, when, email: { owner: ownerEmailResult, customer: customerEmailResult } });
   } catch (error) {
+    if (appointment) {
+      console.error("Appointment saved but confirmation failed", { id: appointment.id, error: error.message });
+      return NextResponse.json({ ok: true, id: appointment.id, email: { owner: { sent: false }, customer: { sent: false } } });
+    }
     return NextResponse.json({ error: error.message || "Unable to schedule appointment." }, { status: 400 });
   }
+}
+
+export async function GET() {
+  return NextResponse.json({ slots: await getAvailableSlots() }, { headers: { "Cache-Control": "no-store" } });
 }

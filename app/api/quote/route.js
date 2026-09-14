@@ -9,6 +9,7 @@ import { checkRateLimit } from "../../../lib/rate-limit";
 import { optionalDate, requireEmail, requireEnum, requirePhone, requireText } from "../../../lib/validation";
 import { MAX_QUOTE_TOTAL_BYTES, validateQuotePhotos } from "../../../lib/quote-photos";
 import { quoteSummary } from "../../../lib/quote-email";
+import { PROJECT_TYPES, PROJECT_SURFACES } from "../../../lib/quote-fields";
 
 export const runtime = "nodejs";
 
@@ -41,14 +42,15 @@ export async function POST(request) {
     if (startDate && (!/^\d{4}-\d{2}-\d{2}$/.test(startDate) || preferredStartDate.toISOString().slice(0, 10) !== startDate)) {
       throw new Error("Please enter a valid preferred start date.");
     }
+    const projectType = requireEnum(formData.get("projectType"), PROJECT_TYPES, "Project type");
     const data = {
       fullName: quoteText(formData.get("fullName"), "Full name", 120),
       phone: requirePhone(quoteText(formData.get("phone"), "Phone number", 25)),
       email: requireEmail(quoteText(formData.get("email"), "Email", 254)),
-      address: quoteText(formData.get("address"), "Job address", 220),
-      projectType: requireEnum(formData.get("projectType"), ["Interior painting", "Exterior painting", "Cabinet painting", "Fence or deck", "Commercial painting", "Drywall patching and prep"], "Project type"),
-      surface: requireEnum(formData.get("surface"), ["INTERIOR", "EXTERIOR", "BOTH"], "Project area"),
-      projectSize: quoteText(formData.get("projectSize"), "Room count or project size", 120),
+      address: quoteText(formData.get("address"), "Project town or ZIP code", 220),
+      projectType,
+      surface: requireEnum(formData.get("surface") || PROJECT_SURFACES[projectType] || "UNKNOWN", ["INTERIOR", "EXTERIOR", "BOTH", "UNKNOWN"], "Project area"),
+      projectSize: quoteText(typeof formData.get("projectSize") === "string" && !formData.get("projectSize").trim() ? "Not sure yet" : formData.get("projectSize") || "Not sure yet", "Room count or project size", 120),
       preferredStartDate,
       description: quoteText(formData.get("description"), "Description", 10000)
     };

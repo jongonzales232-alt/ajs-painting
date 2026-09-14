@@ -21,6 +21,7 @@ enum SurfaceType {
   INTERIOR
   EXTERIOR
   BOTH
+  UNKNOWN
 }
 
 model Lead {
