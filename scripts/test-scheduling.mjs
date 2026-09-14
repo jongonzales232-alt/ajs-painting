@@ -62,10 +62,61 @@ await check("invalid ranges, inactive and past times are excluded", () => {
   assert.equal(make({ slots: [{ ...slots[0], active: false }] }).length, 0);
 });
 await check("duplicate starts collapse and dates are ordered", () => { assert.equal(make({ slots: [...slots, slots[0]] }).length, 2); });
+const workingHours = [{ weekday: 1, startTime: "09:00", endTime: "15:00", active: true }];
+await check("9 AM–3 PM working hours offer six one-hour visits", () => {
+  const available = make({ slots: workingHours });
+  assert.equal(available.length, 6);
+  assert.equal(available[0].startsAt, "2026-09-14T14:00:00.000Z");
+  assert.equal(available[5].endsAt, "2026-09-14T20:00:00.000Z");
+  assert.ok(available.every((slot) => new Date(slot.endsAt) - new Date(slot.startsAt) === 3600000));
+});
+await check("a booked hour removes only that hour and preserves adjacent starts", () => {
+  const available = make({ slots: workingHours, appointments: [{ startsAt: "2026-09-14T16:00:00Z", endsAt: "2026-09-14T17:00:00Z" }] });
+  assert.equal(available.length, 5);
+  assert.ok(!available.some((slot) => slot.startsAt === "2026-09-14T16:00:00.000Z"));
+});
+await check("existing long appointments still block the entire reserved interval", () => {
+  assert.equal(make({ slots: workingHours, appointments: [{ startsAt: "2026-09-14T14:00:00Z", endsAt: "2026-09-14T20:00:00Z" }] }).length, 0);
+});
+await check("partial hours never extend past closing and short ranges offer no visit", () => {
+  const available = make({ slots: [{ ...workingHours[0], startTime: "09:30", endTime: "12:00" }] });
+  assert.equal(available.length, 2);
+  assert.equal(available[1].endsAt, "2026-09-14T16:30:00.000Z");
+  assert.equal(make({ slots: [{ ...workingHours[0], endTime: "09:30" }] }).length, 0);
+});
+await check("a partly elapsed working day retains later one-hour visits", () => {
+  const available = make({ slots: workingHours, now: new Date("2026-09-14T15:15:00Z") });
+  assert.equal(available.length, 4);
+  assert.equal(available[0].startsAt, "2026-09-14T16:00:00.000Z");
+});
+await check("overlapping working ranges deduplicate generated starts", () => {
+  assert.equal(make({ slots: [...workingHours, { ...workingHours[0], startTime: "10:00", endTime: "12:00" }] }).length, 6);
+});
+await check("DST working ranges never yield nonexistent or two-hour visits", () => {
+  for (const date of ["2026-03-08", "2026-11-01"]) {
+    const available = make({ slots: [{ weekday: 0, startTime: "00:00", endTime: "05:00" }], now: time.businessDateTime(date, "00:00") });
+    assert.ok(available.length > 0);
+    assert.ok(available.every((slot) => new Date(slot.endsAt) - new Date(slot.startsAt) === 3600000));
+  }
+});
 await check("booking persists and both messages/calendar use correct instant", async () => {
   const result = await post(); assert.equal(result.status, 200); assert.equal(rows.length, 1); assert.equal(emails.length, 2);
   assert.match(result.body.when, /9:00 AM CDT/); assert.match(emails[1].text, /123 Test Road/);
   assert.match(emails[1].attachments[0].content, /DTSTART:20260914T140000Z/);
+});
+await check("booking within long working hours saves only one hour and rejects old six-hour selection", async () => {
+  const original = slots.splice(0, slots.length, ...workingHours);
+  try {
+    assert.equal((await post({ slot: "2026-09-14T14:00:00.000Z|2026-09-14T20:00:00.000Z" })).status, 409);
+    assert.equal(rows.length, 0);
+    assert.equal((await post({ slot: "2026-09-14T16:00:00.000Z|2026-09-14T17:00:00.000Z" })).status, 200);
+    assert.equal(new Date(rows[0].endsAt) - new Date(rows[0].startsAt), 3600000);
+    assert.match(emails[1].attachments[0].content, /DTEND:20260914T170000Z/);
+    const available = await (await route.namespace.GET()).json();
+    assert.equal(available.slots.filter((slot) => slot.date === "2026-09-14").length, 5);
+  } finally {
+    slots.splice(0, slots.length, ...original);
+  }
 });
 await check("duplicate and overlapping bookings rejected", async () => {
   assert.equal((await post()).status, 200);
