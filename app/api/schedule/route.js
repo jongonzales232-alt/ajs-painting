@@ -48,7 +48,7 @@ export async function POST(request) {
       });
     } catch (error) {
       if (["P2002", "P2034", "P1008", "SLOT_UNAVAILABLE"].includes(error.code)) {
-        return NextResponse.json({ error: "That appointment time was just booked. Please choose another time." }, { status: 409 });
+        return NextResponse.json({ error: "That time is no longer available, including the travel time needed between visits. Please choose another time." }, { status: 409 });
       }
       throw error;
     }

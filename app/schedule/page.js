@@ -19,7 +19,7 @@ export default async function SchedulePage() {
         <div className="container">
           <p className="eyebrow">Choose a time that works for you</p>
           <h1>Schedule an Estimate</h1>
-          <p>Book a free on-site estimate. Visits take 30–60 minutes; we reserve a full hour for your project. All appointments use Central Time.</p>
+          <p>Book a free on-site estimate. Visits take 30–60 minutes; we reserve a full hour for your project, plus travel time between appointments. All appointments use Central Time.</p>
         </div>
       </section>
       <section className="section inquiry-section">

@@ -340,7 +340,7 @@ export default function AdminClient({ initialLeads, appointments, galleryPhotos,
 
           <div id="availability" className="admin-panel">
             <h2>Availability</h2>
-            <p>Working hours use {timeZone}. Each range is divided into one-hour estimate appointments, starting at the beginning of the range. Allow at least one full hour; leftover time under an hour is not offered. Existing appointments stay unchanged.</p>
+            <p>Working hours use {timeZone}. Each range offers one-hour estimate visits, with an additional hour reserved for travel after each booked visit. A 9 AM visit blocks bookings until 11 AM; the same travel gap applies before an existing visit. Allow at least one full hour; leftover time under an hour is not offered. Existing appointments stay unchanged.</p>
             <form onSubmit={addAvailability} className="form-grid">
               <div className="field full">
                 <label>Day</label>

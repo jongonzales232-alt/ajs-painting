@@ -13,7 +13,7 @@ const slots = [{ weekday: 1, startTime: "09:00", endTime: "10:00", active: true 
 const db = {
   availabilitySlot: { findMany: async () => slots }, blockedDay: { findMany: async () => blocked },
   appointment: {
-    findMany: async () => rows,
+    findMany: async ({ where }) => rows.filter((row) => new Date(row.endsAt) > where.endsAt.gt && new Date(row.startsAt) < where.startsAt.lt),
     create: async ({ data }) => { if (conflict) throw Object.assign(new Error("Conflict"), { code: "P2034" }); const row = { ...data, id: `test-${rows.length}` }; rows.push(row); return row; }
   },
   $transaction: async (fn) => fn(db)
@@ -51,9 +51,10 @@ await check("winter, summer and DST transition conversions", () => {
 });
 await check("Central calendar day is used across UTC midnight", () => { assert.equal(time.businessDateKey(new Date("2026-09-15T02:00:00Z")), "2026-09-14"); });
 await check("today's blocked day removes all today's appointments", () => { assert.equal(make({ blockedDays: [{ date: "2026-09-14T00:00:00Z" }] }).length, 0); });
-await check("overlaps excluded, adjacent visits allowed", () => {
+await check("overlaps and adjacent visits excluded; full travel gap allowed", () => {
   assert.equal(make({ appointments: [{ startsAt: "2026-09-14T14:15:00Z", endsAt: "2026-09-14T14:45:00Z" }] }).length, 0);
-  assert.equal(make({ appointments: [{ startsAt: "2026-09-14T13:00:00Z", endsAt: "2026-09-14T14:00:00Z" }] }).length, 2);
+  assert.equal(make({ appointments: [{ startsAt: "2026-09-14T13:00:00Z", endsAt: "2026-09-14T14:00:00Z" }] }).length, 0);
+  assert.equal(make({ appointments: [{ startsAt: "2026-09-14T12:00:00Z", endsAt: "2026-09-14T13:00:00Z" }] }).length, 2);
 });
 await check("invalid ranges, inactive and past times are excluded", () => {
   assert.equal(time.isValidTimeRange("09:99", "10:00"), false);
@@ -70,10 +71,9 @@ await check("9 AM–3 PM working hours offer six one-hour visits", () => {
   assert.equal(available[5].endsAt, "2026-09-14T20:00:00.000Z");
   assert.ok(available.every((slot) => new Date(slot.endsAt) - new Date(slot.startsAt) === 3600000));
 });
-await check("a booked hour removes only that hour and preserves adjacent starts", () => {
+await check("an 11 AM booking blocks 10 AM and noon but allows 9 AM and 1 PM", () => {
   const available = make({ slots: workingHours, appointments: [{ startsAt: "2026-09-14T16:00:00Z", endsAt: "2026-09-14T17:00:00Z" }] });
-  assert.equal(available.length, 5);
-  assert.ok(!available.some((slot) => slot.startsAt === "2026-09-14T16:00:00.000Z"));
+  assert.deepEqual(Array.from(available, (slot) => slot.startsAt), ["2026-09-14T14:00:00.000Z", "2026-09-14T18:00:00.000Z", "2026-09-14T19:00:00.000Z"]);
 });
 await check("existing long appointments still block the entire reserved interval", () => {
   assert.equal(make({ slots: workingHours, appointments: [{ startsAt: "2026-09-14T14:00:00Z", endsAt: "2026-09-14T20:00:00Z" }] }).length, 0);
@@ -113,7 +113,7 @@ await check("booking within long working hours saves only one hour and rejects o
     assert.equal(new Date(rows[0].endsAt) - new Date(rows[0].startsAt), 3600000);
     assert.match(emails[1].attachments[0].content, /DTEND:20260914T170000Z/);
     const available = await (await route.namespace.GET()).json();
-    assert.equal(available.slots.filter((slot) => slot.date === "2026-09-14").length, 5);
+    assert.equal(available.slots.filter((slot) => slot.date === "2026-09-14").length, 3);
   } finally {
     slots.splice(0, slots.length, ...original);
   }
@@ -123,6 +123,43 @@ await check("duplicate and overlapping bookings rejected", async () => {
   assert.equal((await post()).status, 409);
   assert.equal((await post({ slot: "2026-09-14T14:30:00.000Z|2026-09-14T15:30:00.000Z" })).status, 409);
   assert.equal(rows.length, 1);
+});
+await check("9 AM booking blocks 10 AM but permits 11 AM; customer calendar remains one hour", async () => {
+  const original = slots.splice(0, slots.length, ...workingHours);
+  try {
+    assert.equal((await post()).status, 200);
+    assert.equal((await post({ slot: "2026-09-14T15:00:00.000Z|2026-09-14T16:00:00.000Z" })).status, 409);
+    assert.equal((await post({ slot: "2026-09-14T16:00:00.000Z|2026-09-14T17:00:00.000Z" })).status, 200);
+    assert.equal(rows.length, 2);
+    assert.match(emails[1].attachments[0].content, /DTEND:20260914T150000Z/);
+  } finally { slots.splice(0, slots.length, ...original); }
+});
+await check("later booking first still rejects the adjacent earlier visit", async () => {
+  const original = slots.splice(0, slots.length, ...workingHours);
+  try {
+    assert.equal((await post({ slot: "2026-09-14T15:00:00.000Z|2026-09-14T16:00:00.000Z" })).status, 200);
+    assert.equal((await post()).status, 409);
+    assert.equal((await post({ slot: "2026-09-14T17:00:00.000Z|2026-09-14T18:00:00.000Z" })).status, 200);
+    assert.equal(rows.length, 2);
+  } finally { slots.splice(0, slots.length, ...original); }
+});
+await check("a 59-minute travel gap is blocked; exactly 60 minutes is allowed", () => {
+  const appointment = { startsAt: "2026-09-14T14:00:00Z", endsAt: "2026-09-14T15:00:00Z" };
+  assert.equal(make({ slots: [{ weekday: 1, startTime: "10:59", endTime: "11:59" }], appointments: [appointment] }).length, 0);
+  assert.equal(make({ slots: [{ weekday: 1, startTime: "11:00", endTime: "12:00" }], appointments: [appointment] }).length, 1);
+});
+await check("recently finished visits remain in DB availability checks during travel", async () => {
+  const original = slots.splice(0, slots.length, { weekday: 1, startTime: "07:15", endTime: "08:15" });
+  try {
+    rows.push({ startsAt: new Date("2026-09-14T10:30:00Z"), endsAt: new Date("2026-09-14T11:30:00Z") });
+    const result = await (await route.namespace.GET()).json();
+    assert.ok(!result.slots.some((slot) => slot.date === "2026-09-14"));
+  } finally { slots.splice(0, slots.length, ...original); }
+});
+await check("travel buffer crosses midnight into the next working day", () => {
+  const available = make({ now: new Date("2026-09-15T05:00:00Z"), slots: [{ weekday: 2, startTime: "00:15", endTime: "02:15" }], appointments: [{ startsAt: "2026-09-15T03:30:00Z", endsAt: "2026-09-15T04:30:00Z" }] });
+  assert.equal(available.length, 1);
+  assert.equal(available[0].startsAt, "2026-09-15T06:15:00.000Z");
 });
 await check("forged or stale times rejected without saving", async () => {
   assert.equal((await post({ slot: "2026-09-14T09:00:00Z|2026-09-14T10:00:00Z" })).status, 400);
