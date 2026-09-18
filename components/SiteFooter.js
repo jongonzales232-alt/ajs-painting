@@ -25,6 +25,7 @@ export default function SiteFooter() {
           <div className="footer-links">
             <Link href="/services">Services</Link>
             <Link href="/gallery">Recent work</Link>
+            <Link href="/#reviews">Google reviews</Link>
             <Link href="/schedule">Schedule an estimate</Link>
             <Link href="/quote">Request a quote</Link>
           </div>

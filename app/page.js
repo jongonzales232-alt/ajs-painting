@@ -123,6 +123,25 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <section className="section" id="reviews" aria-labelledby="reviews-heading">
+        <div className="container">
+          <div className="section-title">
+            <p className="eyebrow">Customer feedback</p>
+            <h2 id="reviews-heading">Find us on Google</h2>
+            <p>Worked with AJ&apos;s Painting? Share your honest experience to help other homeowners get to know our work.</p>
+          </div>
+          <div className="service-card">
+            <h3>Help us build our Google reviews</h3>
+            <p>We&apos;re starting our Google review collection. You can leave a review or visit our Google profile for the latest customer feedback.</p>
+            <div className="actions" style={{ marginTop: 24 }}>
+              <a className="button" href="https://g.page/r/CYMMeygSaqn_EBM/review" target="_blank" rel="noopener noreferrer">Leave a Google review<span className="sr-only"> (opens in a new tab)</span></a>
+              <a className="button-secondary" href="https://www.google.com/maps/place/Aj's+Painting+and+Contracting/data=!4m2!3m1!1s0x0:0xffa96a12287b0c83" target="_blank" rel="noopener noreferrer">View our Google profile<span className="sr-only"> (opens in a new tab)</span></a>
+            </div>
+            <p style={{ marginTop: 16, fontSize: "0.9rem" }}>Reviews are submitted on Google. A Google account is required to leave a review.</p>
+          </div>
+        </div>
+      </section>
+
       <section className="section cta-section">
         <div className="container cta-panel">
           <div>
