@@ -10,7 +10,7 @@ export default function SiteHeader() {
       <div className="trust-bar">
         <div className="container trust-bar-inner">
           <span>Over 20 years of hands-on painting experience</span>
-          <span>Free estimates · {insurance.detail}</span>
+          <span>Free estimates · {insurance.headline}</span>
           {phone ? <a href={`tel:${phone.replace(/[^+\d]/g, "")}`}>{phone}</a> : null}
         </div>
       </div>
