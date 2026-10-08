@@ -32,7 +32,7 @@ export default function AboutPage() {
             <h2 id="story-heading">From ranching to a craft of his own</h2>
           </div>
           <div className="about-copy">
-            <p>Before becoming a painter, Felipe worked as a rancher and dreamed of owning his own business. After moving to Hill County, he took classes in painting and texturing, then spent several years working for another company and learning the trade before starting AJ&apos;s Painting. Today, he brings more than 27 years of experience to his work.</p>
+            <p>Before becoming a painter, Felipe worked as a ranch hand and dreamed of owning his own business. After moving to Hill County, he took classes in painting and texturing, then spent several years working for another company and learning the trade before starting AJ&apos;s Painting. Today, he brings more than 27 years of experience to his work.</p>
             <p>His approach has always been simple: “If you&apos;re going to do it, do it right.” That means being reliable, keeping his word and taking pride in the finished result.</p>
           </div>
         </div>

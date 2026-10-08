@@ -58,7 +58,7 @@ await check("desktop and mobile share unique public destinations, including cros
 });
 await check("About copy retains owner facts, services and both estimate paths", async () => {
   const h = await render("app/about/page.js"), copy = text(h.tree);
-  for (const phrase of ["founded by Felipe", "Alan and Jonathan", "rancher", "Hill County", "more than 27 years", "firefighter", "website and administrative", "drywall, texturing, tile work and remodeling"]) assert.ok(copy.includes(phrase), phrase);
+  for (const phrase of ["founded by Felipe", "Alan and Jonathan", "ranch hand", "Hill County", "more than 27 years", "firefighter", "website and administrative", "drywall, texturing, tile work and remodeling"]) assert.ok(copy.includes(phrase), phrase);
   assert.equal((copy.match(/Alan/g) || []).length, 1);
   assert.equal(h.all.filter((node) => node.type === "h1").length, 1);
   assert.equal(h.all.filter((node) => node.type === "section").length, 5);
