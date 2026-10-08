@@ -7,7 +7,7 @@ const compat = new FlatCompat({ baseDirectory: __dirname });
 
 const eslintConfig = [
   {
-    ignores: [".next/**", "node_modules/**", "public/uploads/**", "storage/uploads/**"]
+    ignores: [".next/**", ".next-analytics*/**", "node_modules/**", "public/uploads/**", "storage/uploads/**"]
   },
   ...compat.extends("next/core-web-vitals")
 ];

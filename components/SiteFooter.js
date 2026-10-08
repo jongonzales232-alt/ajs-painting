@@ -42,6 +42,8 @@ export default function SiteFooter() {
       <div className="container footer-bottom">
         <span>© {new Date().getFullYear()} AJ&apos;s Painting</span>
         <span>Your Project. Our Priority.</span>
+        <Link href="/privacy">Privacy notice</Link>
+        <button type="button" className="privacy-settings" data-privacy-settings>Privacy choices</button>
       </div>
     </footer>
   );

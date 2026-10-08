@@ -24,6 +24,9 @@ export async function POST(request) {
       html: `<h2>Website message</h2><p>${escapeHtml(name)}<br>${escapeHtml(phone)}<br>${escapeHtml(email)}</p><p>${nl2br(message)}</p>`
     });
 
+    // Contact messages are not stored in the database. Failed/skipped email is
+    // NOT a successful inquiry; keep the customer's form available for retry.
+    if (emailResult.sent !== true) return NextResponse.json({ ok: false, error: "Your message could not be delivered. Please try again or call us." }, { status: 503 });
     return NextResponse.json({ ok: true, email: emailResult });
   } catch (error) {
     return NextResponse.json({ error: error.message || "Message could not be sent." }, { status: 400 });

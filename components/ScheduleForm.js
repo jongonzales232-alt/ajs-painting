@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { trackFormStart, trackLead } from "../lib/analytics-client";
 
 export default function ScheduleForm({ slots }) {
   const [available, setAvailable] = useState(slots);
@@ -9,6 +10,7 @@ export default function ScheduleForm({ slots }) {
   const [status, setStatus] = useState({ type: "", text: "" });
   const [loading, setLoading] = useState(false);
   const [booking, setBooking] = useState(null);
+  const busy = useRef(false);
   const dates = [...new Map(available.map((slot) => [slot.date, slot.dateLabel])).entries()];
   const chosen = available.find((slot) => `${slot.startsAt}|${slot.endsAt}` === selected);
 
@@ -23,7 +25,8 @@ export default function ScheduleForm({ slots }) {
 
   async function submit(event) {
     event.preventDefault();
-    if (loading || booking) return;
+    if (busy.current || booking) return;
+    busy.current = true;
     const formData = new FormData(event.currentTarget);
     const appointmentLabel = chosen ? `${chosen.dateLabel}, ${chosen.timeLabel}` : "";
     setLoading(true);
@@ -34,7 +37,7 @@ export default function ScheduleForm({ slots }) {
         body: JSON.stringify(Object.fromEntries(formData))
       });
       const result = await response.json().catch(() => ({}));
-      if (!response.ok) {
+      if (!response.ok || result.ok !== true || typeof result.id !== "string" || !result.id) {
         let message = result.error || "That appointment could not be booked.";
         if (response.status === 409) {
           try { await refreshTimes(); message += " Available times have been refreshed; your contact details are still here."; }
@@ -43,17 +46,18 @@ export default function ScheduleForm({ slots }) {
         setStatus({ type: "error", text: message });
         return;
       }
+      if (result.ok === true && result.id) trackLead("schedule", result.id);
       setBooking({
         id: result.id, when: result.when || appointmentLabel, address: formData.get("address"),
         emailed: Boolean(result.email?.customer?.sent && result.email?.owner?.sent)
       });
     } catch {
       setStatus({ type: "error", text: "We could not confirm the booking. Check your email or call us before trying again, so you do not book twice." });
-    } finally { setLoading(false); }
+    } finally { setLoading(false); busy.current = false; }
   }
 
   if (booking) return (
-    <div className="form-card" role="status" aria-live="polite">
+    <div className="form-card" role="status" aria-live="polite" data-clarity-mask="true">
       <div className="form-heading"><h2>Your estimate is booked</h2><p>Keep these details for your visit.</p></div>
       <div className="booking-summary"><strong>{booking.when}</strong><p>{booking.address}</p><p>Booking reference: {booking.id}</p></div>
       <p>{booking.emailed ? "A confirmation and calendar invitation have been emailed to you." : "Your appointment is saved, but email confirmation is delayed. Please save these details; you do not need to book again."}</p>
@@ -62,7 +66,7 @@ export default function ScheduleForm({ slots }) {
   );
 
   return (
-    <form className="form-card" onSubmit={submit} aria-busy={loading}>
+    <form className="form-card" onSubmit={submit} onChange={() => trackFormStart("schedule")} data-clarity-mask="true" aria-busy={loading}>
       <fieldset className="schedule-fields" disabled={loading}>
         <div className="form-heading">
           <h2>Choose your visit</h2>

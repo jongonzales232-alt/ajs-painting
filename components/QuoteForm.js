@@ -1,11 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { prepareQuotePhoto } from "../lib/prepare-quote-photo";
 import { MAX_QUOTE_PHOTOS } from "../lib/quote-photos";
 import { PROJECT_TYPES, PROJECT_SURFACES } from "../lib/quote-fields";
+import { trackFormStart, trackLead } from "../lib/analytics-client";
 
 export default function QuoteForm() {
+  const router = useRouter();
   const [status, setStatus] = useState({ type: "", text: "" });
   const [loading, setLoading] = useState(false);
   const [photos, setPhotos] = useState([]);
@@ -79,13 +82,14 @@ export default function QuoteForm() {
         result = {};
       }
 
-      if (!response.ok) {
+      if (!response.ok || result.ok !== true || typeof result.id !== "string" || !result.id) {
         setStatus({ type: "error", text: result.error || (response.status === 413 ? "These photos are too large to send together. Remove a few photos and try again." : "Please check the form and try again.") });
         return;
       }
 
+      if (result.ok === true && result.id) trackLead("quote", result.id, projectType);
       form.reset();
-      window.location.href = result.email?.owner?.sent && result.email?.customer?.sent ? "/thank-you" : "/thank-you?email=delayed";
+      router.push(result.email?.owner?.sent && result.email?.customer?.sent ? "/thank-you" : "/thank-you?email=delayed");
     } catch {
       setStatus({ type: "error", text: "We could not send your request. Please check your connection and try again." });
     } finally {
@@ -95,7 +99,7 @@ export default function QuoteForm() {
   }
 
   return (
-    <form className="form-card" onSubmit={submit} aria-busy={loading || preparing}>
+    <form className="form-card" onSubmit={submit} onChange={() => trackFormStart("quote")} data-clarity-mask="true" aria-busy={loading || preparing}>
       <fieldset disabled={loading} className="quote-fields">
       <div className="form-heading">
         <h2>Project details</h2>

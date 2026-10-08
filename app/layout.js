@@ -1,4 +1,6 @@
 import "./globals.css";
+import AnalyticsConsent from "../components/AnalyticsConsent";
+import { analyticsConfig } from "../lib/analytics-config";
 
 export const metadata = {
   title: {
@@ -12,9 +14,10 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
+  const { enabled, test, qa } = analyticsConfig();
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>{children}<AnalyticsConsent enabled={enabled} test={test} qa={qa} /></body>
     </html>
   );
 }

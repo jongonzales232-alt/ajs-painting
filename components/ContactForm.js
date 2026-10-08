@@ -1,14 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { trackFormStart, trackLead } from "../lib/analytics-client";
 
 export default function ContactForm() {
   const [status, setStatus] = useState({ type: "", text: "" });
   const [loading, setLoading] = useState(false);
+  const busy = useRef(false);
 
   async function submit(event) {
     event.preventDefault();
-    if (loading) return;
+    if (busy.current) return;
+    busy.current = true;
     setLoading(true);
     const form = event.currentTarget;
     setStatus({ type: "", text: "" });
@@ -20,21 +23,23 @@ export default function ContactForm() {
         body: JSON.stringify(Object.fromEntries(formData))
       });
       const result = await response.json().catch(() => ({}));
-      if (!response.ok) {
+      if (!response.ok || result.ok !== true || result.email?.sent !== true) {
         setStatus({ type: "error", text: result.error || "Message could not be sent." });
         return;
       }
+      trackLead("contact", crypto.randomUUID());
       form.reset();
       setStatus({ type: "success", text: "Message sent. AJ's Painting will follow up soon." });
     } catch {
       setStatus({ type: "error", text: "We could not send your message. Please check your connection and try again." });
     } finally {
       setLoading(false);
+      busy.current = false;
     }
   }
 
   return (
-    <form className="form-card" onSubmit={submit} aria-busy={loading}>
+    <form className="form-card" onSubmit={submit} onChange={() => trackFormStart("contact")} data-clarity-mask="true" aria-busy={loading}>
       <div className="form-heading">
         <h2>Send a message</h2>
         <p>Share the basics and we&apos;ll follow up about the best next step.</p>
