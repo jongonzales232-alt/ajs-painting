@@ -1,6 +1,6 @@
 # AJ's Painting analytics — owner guide
 
-Prepared October 7, 2026. **Website changes are local and unpublished.**
+Updated October 7, 2026. **Published on [ajspaintingtx.com](https://ajspaintingtx.com/) with your approval.** Live application commit: `12f1ca2`.
 
 ## Your account and launch settings
 
@@ -14,7 +14,7 @@ Prepared October 7, 2026. **Website changes are local and unpublished.**
 - Advertising personalization disallowed in all 307 available regions. No Ads integration or remarketing enabled.
 - User and event retention: 2 months; reset on new user activity off. Aggregated standard reports are not governed by that short user/event retention setting.
 
-After approving launch, set these server environment settings on the **ajs-painting** Render service and rebuild/deploy. Do not paste Google's generic snippet into the site; that would bypass this consent implementation and duplicate events.
+These server environment settings are now saved on the **ajs-painting** Render service and the site has been rebuilt/deployed. Do not paste Google's generic snippet into the site; that would bypass this consent implementation and duplicate events.
 
 ```
 ANALYTICS_ENABLED=true
@@ -49,9 +49,9 @@ Sign in to the property above. In each report, use the date picker at the top ri
 | `generate_lead` | Quote/appointment saved successfully, or contact message accepted by the email service. Email acceptance is not proof of inbox delivery. A saved quote counts even if its notification is delayed. |
 | `site_engagement` | Actual foreground time sent on interactions/transitions and once after ten seconds per page. No recurring keep-alive; background time excluded. The blank collector cannot measure focus itself. |
 
-Already configured: **Admin → Data display → Custom definitions** has the event-scoped dimensions **Form type** (`form_type`) and **Service type** (`service_type`). **Admin → Data display → Events** has `generate_lead` marked as a key event, counted once per event, with no assumed monetary value. It uses the website's explicit event code, not a derived page-view rule. Do not make an automatic event from form clicks, form_submit, or /thank-you views. Phone clicks remain distinct from completed leads. No stream data is expected until an approved deployment.
+Already configured: **Admin → Data display → Custom definitions** has the event-scoped dimensions **Form type** (`form_type`) and **Service type** (`service_type`). **Admin → Data display → Events** has `generate_lead` marked as a key event, counted once per event, with no assumed monetary value. It uses the website's explicit event code, not a derived page-view rule. Do not make an automatic event from form clicks, form_submit, or /thank-you views. Phone clicks remain distinct from completed leads. Data will accumulate as consenting visitors use the published site.
 
-Confirm before launch that Enhanced Measurement remains entirely off (including browser-history pageviews, form interactions, outbound clicks, site search and downloads). Do not enable Google Signals, advertising personalization, user-provided data, cross-domain linking, remarketing or Ads integrations. Review any future Google tag/Tag Manager changes before publishing; the isolated collector and consent gate must remain the only analytics loader.
+Keep Enhanced Measurement entirely off (including browser-history pageviews, form interactions, outbound clicks, site search and downloads). Do not enable Google Signals, advertising personalization, user-provided data, cross-domain linking, remarketing or Ads integrations. Review any future Google tag/Tag Manager changes before publishing; the isolated collector and consent gate must remain the only analytics loader.
 
 ## Privacy and limitations
 
@@ -85,7 +85,7 @@ Real Google requests were inspected from the local website. QA Realtime confirme
 
 The local real-provider switch is development-only, locked to the exact QA ID and loopback hosts. The evidence panel is injected only by `scripts/analytics-qa-proxy.mjs`, never by the deployed application. Production ignores the QA environment switch. No extra hosted website or paid service was created.
 
-**The public website is unchanged.** Publication requires your approval and the Render settings above. Review the privacy notice and verify the deployed build after approval. Standard reports can take 24–48 hours to process. See ANALYTICS-TEST-RESULTS.md for remaining coverage limits.
+**The analytics update is live.** All 90 automated checks and the production build passed. Render confirmed the final deployment; the live collector serves the correct production ID, and desktop/mobile rejection, reload, navigation, privacy choices and public form-page checks passed. A Render-specific hostname issue was found and corrected before launch verification was completed. No synthetic inquiry was submitted to the live site; accepted-consent transport was tested against the separate QA property. Confirm actual incoming activity as customers opt in. Standard reports can take 24–48 hours to process. Review the privacy notice with an appropriate adviser; see ANALYTICS-TEST-RESULTS.md for the full evidence and remaining coverage limits.
 
 ## Sources
 
