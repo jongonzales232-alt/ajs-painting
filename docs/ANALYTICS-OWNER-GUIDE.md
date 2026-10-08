@@ -1,6 +1,6 @@
 # AJ's Painting analytics — owner guide
 
-Updated October 8, 2026. The owner requested automatic public-site analytics without an automatic popup. This update is tested and ready for deployment to [ajspaintingtx.com](https://ajspaintingtx.com/); the previous opt-in release was `12f1ca2`.
+Updated October 8, 2026. **Published on [ajspaintingtx.com](https://ajspaintingtx.com/) as application commit `10cb4bf`.** The owner requested automatic public-site analytics without an automatic popup. Existing opt-outs and supported browser privacy signals remain honored.
 
 ## Your account and launch settings
 
@@ -14,7 +14,7 @@ Updated October 8, 2026. The owner requested automatic public-site analytics wit
 - Advertising personalization disallowed in all 307 available regions. No Ads integration or remarketing enabled.
 - User and event retention: 2 months; reset on new user activity off. Aggregated standard reports are not governed by that short user/event retention setting.
 
-These server environment settings are already saved on the **ajs-painting** Render service. The automatic-tracking update needs a code deployment, not new settings. Do not paste Google's generic snippet into the site; that would bypass the privacy controls and duplicate events.
+These server environment settings are already saved on the **ajs-painting** Render service. The automatic-tracking update was a code-only deployment; no environment settings changed. Do not paste Google's generic snippet into the site; that would bypass the privacy controls and duplicate events.
 
 ```
 ANALYTICS_ENABLED=true
@@ -86,7 +86,7 @@ Real Google requests were inspected from the local website. October 7 QA Realtim
 
 The local real-provider switch is development-only, locked to the exact QA ID and loopback hosts. The evidence panel is injected only by `scripts/analytics-qa-proxy.mjs`, never by the deployed application. Production ignores the QA environment switch. No extra hosted website or paid service was created.
 
-**Automatic-tracking update: ready for deployment.** All 100 automated checks, ESLint and the production build passed. Desktop/mobile QA proved automatic collection with no popup, preserved privacy choices, successful-lead-only counting and no test customer data in the inspected analytics payloads. The October 7 release already included the verified Render hostname correction. No synthetic inquiry was submitted to the live site; transport tests used the separate QA property. Confirm actual incoming customer activity after deployment. Standard reports can take 24–48 hours to process. Review the privacy notice with an appropriate adviser; see ANALYTICS-TEST-RESULTS.md for the evidence and remaining coverage limits.
+**Automatic-tracking update: live.** All 100 automated checks, ESLint and the production build passed. Desktop/mobile QA proved automatic collection with no popup, preserved privacy choices, successful-lead-only counting and no test customer data in the inspected analytics payloads. Render confirmed deployment `dep-db3ic815efls73artbk0` succeeded. Live checks verified the updated notice, correct production ID, GPC/DNT blocking and an existing opt-out. No synthetic inquiry was submitted to the live site; automatic transport tests used the separate QA property. Confirm actual incoming customer activity in the live dashboard. Standard reports can take 24–48 hours to process. Review the privacy notice with an appropriate adviser; see ANALYTICS-TEST-RESULTS.md for the evidence and remaining coverage limits.
 
 ## Sources
 

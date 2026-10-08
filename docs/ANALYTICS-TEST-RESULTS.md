@@ -4,7 +4,7 @@ Updated October 8, 2026. Project: `C:\Users\jony2\Downloads\ajs-painting-transfe
 
 ## Release status
 
-**October 8 automatic-tracking update: tested, awaiting deployment.** The owner explicitly requested automatic analytics without a popup. Eligible new visitors now start analytics automatically; existing opt-outs, Global Privacy Control and Do Not Track remain honored. Footer controls can turn analytics off or on; automatic collection never writes an explicit opt-in record. Clarity and advertising remain off. Separate live and QA properties remain isolated.
+**October 8 automatic-tracking update: published as application commit `10cb4bf`.** The owner explicitly requested automatic analytics without a popup. Eligible new visitors now start analytics automatically; existing opt-outs, Global Privacy Control and Do Not Track remain honored. Footer controls can turn analytics off or on; automatic collection never writes an explicit opt-in record. Clarity and advertising remain off. Separate live and QA properties remain isolated.
 
 The previous opt-in release was published October 7 as application commit `12f1ca2`, including the Render host correction. Historical tests below describe that release, not the new default. Legal review and longer-term reporting/device checks remain follow-ups.
 
@@ -101,6 +101,15 @@ Scheduling success/failure and private-route teardown are covered by automated h
 - Public quote form, its 20-photo guidance, contact form, appointment date options, and privacy notice loaded correctly. No production form was submitted and no synthetic customer record, email or booking was created.
 - Full accepted-consent event/cookie/network tests remain the separate real-provider QA evidence above. Production acceptance was not deliberately exercised after the host fix, to avoid adding synthetic traffic to the live property. Real customer receipt and processed reports should be checked as consenting visits arrive; launch DOM checks are not a full network packet capture.
 
+## Automatic-mode production verification — October 8
+
+- Pushed `10cb4bf` to the existing main branch. Render reported **Deploy succeeded | Live** for `dep-db3ic815efls73artbk0`, duration 1m55s. Startup confirmed the database schema was already in sync.
+- No environment, email, scheduling, domain, account-access or hosting-plan changes. Existing live/QA IDs remain separate.
+- Read-only HTTPS: `/privacy` returned 200 and the October 8 automatic-mode notice. `/analytics/frame` returned 200 with the live ID, no QA ID, automatic preference logic, no-store cache control and no-referrer policy.
+- The collector returned 404 for Sec-GPC: 1, DNT: 1 and query-bearing requests. These HTTP checks execute no scripts and send no events to Google.
+- The live browser reloaded with an existing rejection: no automatic popup and zero collector frames. Opening footer Privacy choices showed the updated automatic-mode explanation and current setting off. Existing public design/content remained present.
+- Actual automatic Google transport was exercised only against the separate QA property to avoid synthetic traffic in live reports. No production form was submitted. QA proxy/development servers were stopped after testing.
+
 ## Follow-ups and coverage limits
 
 1. Review the privacy notice for actual retention, rights, international-transfer and vendor obligations. This is not a legal-compliance certification.
@@ -108,4 +117,4 @@ Scheduling success/failure and private-route teardown are covered by automated h
 3. Review processed standard reports after their 24–48-hour delay. Realtime receipt is proven; processed attribution, long-term cookie expiry and standard-report engagement totals were not independently audited here.
 4. Recommended compatibility follow-up: physical iPhone/Safari and Android, browser back/forward cache, slow-network withdrawal races, and a complete authenticated-admin browser journey. Unit coverage is not exhaustive device/network coverage.
 
-No production customer records, inboxes, bookings, DNS or account access were changed by testing. The October 7 website and analytics settings were published with approval; the October 8 automatic-mode deployment is pending. Analytics counts depend on privacy choices/signals, blockers and network delivery; they are not a transactional source of truth.
+No production customer records, inboxes, bookings, DNS or account access were changed by testing. The October 7 analytics settings and October 8 automatic-mode website update were published with approval. Analytics counts depend on privacy choices/signals, blockers and network delivery; they are not a transactional source of truth.
