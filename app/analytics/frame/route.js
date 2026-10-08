@@ -7,7 +7,12 @@ export const dynamic = "force-dynamic";
 export async function GET(request) {
   const config = analyticsConfig();
   const url = new URL(request.url);
-  const hostAllowed = config.test || config.qa ? ["localhost", "127.0.0.1"].includes(url.hostname) : ["ajspaintingtx.com", "www.ajspaintingtx.com"].includes(url.hostname);
+  // Next's self-hosted request URL uses its bind address (0.0.0.0 on Render).
+  // Check the incoming Host instead; do not trust arbitrary forwarded-host values.
+  const authority = (request.headers.get("host") || url.host).toLowerCase();
+  const hostAllowed = config.test || config.qa
+    ? /^(localhost|127\.0\.0\.1)(:\d{1,5})?$/.test(authority)
+    : /^(ajspaintingtx\.com|www\.ajspaintingtx\.com)(:443)?$/.test(authority);
   if ((!config.enabled && !config.test) || !hostAllowed || url.search || await isAdmin()) return new Response(null, { status: 404 });
   const code = `(${analyticsFrame.toString()})(${JSON.stringify({ id: config.id, test: config.test, qa: config.qa, pages: PAGES })})`;
   return new Response(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="referrer" content="no-referrer"><title>AJ's Painting analytics</title></head><body><script>${code}</script></body></html>`, {
