@@ -1,6 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { getBusinessDetails } from "../lib/business";
+import { SITE_LINKS } from "../lib/site-navigation.mjs";
+import MobileNavigation from "./MobileNavigation";
 
 export default function SiteHeader() {
   const { phone, insurance } = getBusinessDetails();
@@ -9,7 +11,7 @@ export default function SiteHeader() {
     <header className="site-header">
       <div className="trust-bar">
         <div className="container trust-bar-inner">
-          <span>Over 20 years of hands-on painting experience</span>
+          <span>Felipe brings 27+ years of experience</span>
           <span>Free estimates · {insurance.headline}</span>
           {phone ? <a href={`tel:${phone.replace(/[^+\d]/g, "")}`}>{phone}</a> : null}
         </div>
@@ -26,22 +28,10 @@ export default function SiteHeader() {
           />
         </Link>
         <div className="nav-links desktop-nav">
-          <Link href="/services">Services</Link>
-          <Link href="/gallery">Gallery</Link>
-          <Link href="/schedule">Schedule</Link>
-          <Link href="/contact">Contact</Link>
+          {SITE_LINKS.map(({ href, label }) => <Link key={href} href={href}>{label}</Link>)}
           <Link className="nav-cta" href="/quote">Request a Free Quote</Link>
         </div>
-        <details className="mobile-nav">
-          <summary>Menu</summary>
-          <div className="mobile-nav-links">
-            <Link href="/services">Services</Link>
-            <Link href="/gallery">Gallery</Link>
-            <Link href="/schedule">Schedule</Link>
-            <Link href="/contact">Contact</Link>
-            <Link className="nav-cta" href="/quote">Request a Free Quote</Link>
-          </div>
-        </details>
+        <MobileNavigation links={SITE_LINKS} />
       </nav>
     </header>
   );

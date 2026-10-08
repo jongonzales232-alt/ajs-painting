@@ -34,7 +34,7 @@ export default async function HomePage() {
           <p className="eyebrow">Residential &amp; Commercial Painting</p>
           <h1>Careful prep. Clean lines. A finish built to last.</h1>
           <p>
-            Over 20 years of hands-on experience painting homes and businesses. From interiors and exteriors to cabinets, decks, and fences, we bring careful preparation and a professional finish to every project.
+            Led by founder Felipe, who brings more than 27 years of experience. From interiors and exteriors to cabinets, decks, and fences, we bring careful preparation and a professional finish to homes and businesses.
           </p>
           <div className="hero-actions">
             <Link className="button" href="/quote">Request a Free Quote</Link>
@@ -45,7 +45,7 @@ export default async function HomePage() {
 
       <section className="proof-strip" aria-label="Why customers choose AJ's Painting">
         <div className="container proof-grid">
-          <div><strong>20+</strong><span>Years of experience</span></div>
+          <div><strong>27+</strong><span>Years of Felipe&apos;s experience</span></div>
           <div><strong>Free</strong><span>Project estimates</span></div>
           <div><strong>Prep-first</strong><span>Workmanship</span></div>
           <div><strong>{insurance.headline}</strong><span>{insurance.detail}</span></div>
@@ -123,12 +123,12 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="section" id="reviews" aria-labelledby="reviews-heading">
+      <section className="section" id="reviews" aria-labelledby="reviews-heading" tabIndex={-1}>
         <div className="container">
           <div className="section-title">
             <p className="eyebrow">Customer feedback</p>
-            <h2 id="reviews-heading">Find us on Google</h2>
-            <p>Worked with AJ&apos;s Painting? Share your honest experience to help other homeowners get to know our work.</p>
+            <h2 id="reviews-heading">Customer Reviews</h2>
+            <p>Worked with AJ&apos;s Painting? Share your honest experience to help other homeowners and business owners get to know our work.</p>
           </div>
           <div className="service-card">
             <h3>Help us build our Google reviews</h3>

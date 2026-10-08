@@ -24,7 +24,7 @@ export default function ServicesPage() {
         <div className="container">
           <p className="eyebrow">Prepared properly. Finished carefully.</p>
           <h1>Residential &amp; Commercial Painting</h1>
-          <p>Painting for homes, rental properties, offices, storefronts, and small commercial spaces. AJ&apos;s Painting brings more than 20 years of hands-on experience to your interior or exterior project.</p>
+          <p>Painting for homes, rental properties, offices, storefronts, and small commercial spaces. Founder Felipe brings more than 27 years of hands-on experience to your interior or exterior project.</p>
         </div>
       </section>
       <section className="section">

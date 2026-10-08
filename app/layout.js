@@ -7,7 +7,7 @@ export const metadata = {
     default: "AJ's Painting | Residential and Commercial Painting",
     template: "%s | AJ's Painting"
   },
-  description: "Professional interior, exterior, cabinet, deck, fence, residential, and commercial painting backed by more than 20 years of experience.",
+  description: "Residential and commercial painting led by founder Felipe, who brings more than 27 years of experience in the trade.",
   icons: {
     icon: "/brand/ajs-painting-logo-v3.png"
   }
