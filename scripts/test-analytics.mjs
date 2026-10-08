@@ -13,8 +13,9 @@ check("new visitors use automatic analytics without a fabricated opt-in record",
   assert.equal(analyticsAllowed(undefined), false);
 });
 check("prior opt-outs, including old opt-outs, never expire into automatic tracking", () => {
-  for (const at of [Date.now(), Date.now() - CONSENT_AGE * 3]) assert.equal(analyticsPreference({ getItem: () => record("rejected", at) }), "rejected");
-  assert.equal(analyticsPreference({ getItem: () => record("accepted") }), "accepted");
+  const now = Date.now();
+  for (const at of [now, now - CONSENT_AGE * 3]) assert.equal(analyticsPreference({ getItem: () => record("rejected", at) }, {}, now), "rejected");
+  assert.equal(analyticsPreference({ getItem: () => record("accepted", now) }, {}, now), "accepted");
 });
 check("corrupt, future-dated and blocked storage fail closed", () => {
   for (const value of ["bad", "{}", "null", record("accepted", Date.now() + 10000)]) assert.equal(analyticsPreference({ getItem: () => value }), "unavailable");

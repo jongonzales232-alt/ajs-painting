@@ -19,7 +19,8 @@ async function component(filename, { consent = "accepted", signals = {}, privacy
   let stateIndex = 0, consentValue = consent, fetched = 0, resets = 0;
   const effects = [], effectDependencies = [], events = [], routes = [], frames = [], messages = [], preferenceWrites = [];
   const location = { origin: "https://ajspaintingtx.com", hostname: "ajspaintingtx.com", pathname: "/quote" };
-  const storage = { getItem: () => { if (storageBlocked) throw Error("blocked"); return consentValue ? JSON.stringify({ version: 1, choice: consentValue, at: Date.now() }) : null; }, setItem: (key, value) => { if (storageBlocked) throw Error("blocked"); preferenceWrites.push({ key, value }); consentValue = JSON.parse(value).choice; } };
+  const preferenceAt = Date.now();
+  const storage = { getItem: () => { if (storageBlocked) throw Error("blocked"); return consentValue ? JSON.stringify({ version: 1, choice: consentValue, at: preferenceAt }) : null; }, setItem: (key, value) => { if (storageBlocked) throw Error("blocked"); preferenceWrites.push({ key, value }); consentValue = JSON.parse(value).choice; } };
   const win = { ...emitter(), localStorage: storage };
   const doc = { ...emitter(), referrer: "https://www.google.com/search?q=PRIVATE", cookie: "", visibilityState: "visible", createElement() {
     const frame = { setAttribute() {}, contentWindow: { postMessage: (msg) => messages.push(msg) }, remove() { frame.removed = true; } };
