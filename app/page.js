@@ -5,7 +5,7 @@ import { getBusinessDetails } from "../lib/business";
 import { prisma } from "../lib/prisma";
 
 export const metadata = {
-  title: "AJ's Painting | Quality Painting Services You Can Trust",
+  title: { absolute: "AJ's Painting | Residential & Commercial Painting" },
   description: "Request a free quote from AJ's Painting for residential and commercial interior and exterior painting."
 };
 
@@ -31,10 +31,10 @@ export default async function HomePage() {
     <PublicLayout>
       <section className="hero">
         <div className="container hero-inner">
-          <p className="eyebrow">Professional painting · Over 20 years of experience</p>
+          <p className="eyebrow">Residential &amp; Commercial Painting</p>
           <h1>Careful prep. Clean lines. A finish built to last.</h1>
           <p>
-            AJ&apos;s Painting brings decades of hands-on experience to interior, exterior, cabinet, deck, fence, residential, and commercial projects.
+            Over 20 years of hands-on experience painting homes and businesses. From interiors and exteriors to cabinets, decks, and fences, we bring careful preparation and a professional finish to every project.
           </p>
           <div className="hero-actions">
             <Link className="button" href="/quote">Request a Free Quote</Link>
@@ -56,7 +56,7 @@ export default async function HomePage() {
         <div className="container">
           <div className="section-title">
             <p className="eyebrow">Full-service craftsmanship</p>
-            <h2>Painting services for homes and small businesses</h2>
+            <h2>Residential &amp; commercial painting services</h2>
             <p>From single rooms to full exterior repaints, AJ&apos;s Painting keeps the process clear from estimate to final walkthrough.</p>
           </div>
           <div className="grid grid-3">

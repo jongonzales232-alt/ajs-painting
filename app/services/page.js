@@ -2,19 +2,19 @@ import PublicLayout from "../../components/PublicLayout";
 import Link from "next/link";
 
 export const metadata = {
-  title: "Painting Services",
+  title: "Residential & Commercial Painting Services",
   description: "Interior painting, exterior painting, cabinet painting, fence and deck staining, drywall prep, pressure washing, residential painting, and commercial painting."
 };
 
 const services = [
+  ["Residential painting", "Reliable painting for bedrooms, living areas, kitchens, exteriors, rentals, and move-in projects."],
+  ["Commercial painting", "Simple scheduling and clean job sites for offices, storefronts, and small commercial spaces."],
   ["Interior painting", "Walls, ceilings, trim, doors, accent walls, and occupied-home protection."],
   ["Exterior painting", "Siding, trim, shutters, doors, scraping, caulking, and weather-ready coatings."],
   ["Cabinet painting", "Careful cleaning, prep, priming, and finish work for kitchens, baths, and built-ins."],
   ["Fence and deck staining or painting", "Refresh exterior wood surfaces with stain or paint after proper prep."],
   ["Drywall patching and minor prep work", "Small patches, sanding, nail pops, cracks, and surface preparation before paint."],
-  ["Pressure washing and prep work", "Wash and prep surfaces so paint adheres properly and lasts longer."],
-  ["Residential painting", "Reliable painting for bedrooms, living areas, kitchens, exteriors, rentals, and move-in projects."],
-  ["Commercial painting", "Simple scheduling and clean job sites for offices, storefronts, and small commercial spaces."]
+  ["Pressure washing and prep work", "Wash and prep surfaces so paint adheres properly and lasts longer."]
 ];
 
 export default function ServicesPage() {
@@ -23,8 +23,8 @@ export default function ServicesPage() {
       <section className="page-title">
         <div className="container">
           <p className="eyebrow">Prepared properly. Finished carefully.</p>
-          <h1>Painting Services</h1>
-          <p>From one-room refreshes to full exterior projects, AJ&apos;s Painting brings more than 20 years of hands-on experience to every surface.</p>
+          <h1>Residential &amp; Commercial Painting</h1>
+          <p>Painting for homes, rental properties, offices, storefronts, and small commercial spaces. AJ&apos;s Painting brings more than 20 years of hands-on experience to your interior or exterior project.</p>
         </div>
       </section>
       <section className="section">
