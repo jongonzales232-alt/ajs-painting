@@ -1,10 +1,12 @@
 # Analytics verification and release checklist
 
-October 7, 2026. Project: `C:\Users\jony2\Downloads\ajs-painting-transfer`.
+Updated October 8, 2026. Project: `C:\Users\jony2\Downloads\ajs-painting-transfer`.
 
 ## Release status
 
-**Published with owner approval on October 7, 2026.** Live application commit `12f1ca2` includes the consent-gated analytics implementation and Render host correction. Separate live and QA properties remain isolated. Actual requests and QA Realtime receipt were verified before launch; production checks are recorded below. Legal review and longer-term reporting/device checks remain follow-ups.
+**October 8 automatic-tracking update: tested, awaiting deployment.** The owner explicitly requested automatic analytics without a popup. Eligible new visitors now start analytics automatically; existing opt-outs, Global Privacy Control and Do Not Track remain honored. Footer controls can turn analytics off or on; automatic collection never writes an explicit opt-in record. Clarity and advertising remain off. Separate live and QA properties remain isolated.
+
+The previous opt-in release was published October 7 as application commit `12f1ca2`, including the Render host correction. Historical tests below describe that release, not the new default. Legal review and longer-term reporting/device checks remain follow-ups.
 
 ## Inspection
 
@@ -19,17 +21,33 @@ October 7, 2026. Project: `C:\Users\jony2\Downloads\ajs-painting-transfer`.
 |---|---:|---|
 | `scripts/test-quote.mjs` | 17 passed | Existing quote/photo API regression checks |
 | `scripts/test-scheduling.mjs` | 28 passed | Existing Central-time scheduling and travel-buffer rules |
-| `scripts/test-analytics.mjs` | 13 passed | Consent, allowlists, origin/source checks, duplicates, load gates, withdrawal, dry-run isolation and foreground clock |
+| `scripts/test-analytics.mjs` | 18 passed | Automatic default without false opt-in, persistent previous rejections, storage failures, GPC/DNT, allowlists, origin/source checks, duplicates, load gates, opt-out, isolation and foreground clock |
 | `scripts/test-analytics-config.mjs` | 4 passed | Production/development isolation and locked QA ID |
-| `scripts/test-analytics-ui.mjs` | 14 passed | Actual React handlers: starts, clicks, success/failure, duplicate submits, malformed responses, saved-but-email-delayed quotes; consent controller and private navigation |
+| `scripts/test-analytics-ui.mjs` | 18 passed | Actual React handlers: automatic collection without popup, footer opt-out, privacy signals, stable collector when saving an already-on choice, starts, clicks, success/failure, duplicate submits, malformed responses, saved-but-email-delayed quotes and private navigation |
 | `scripts/test-contact.mjs` | 4 passed | Actual API: email success, failed/skipped delivery, rate limit |
-| `scripts/test-analytics-route.mjs` | 10 passed | Render bind-address/public Host handling, exact domain allowlist, preview/forwarded-host/query rejection, admin exclusion and QA isolation |
+| `scripts/test-analytics-route.mjs` | 11 passed | Render bind-address/public Host handling, exact domain allowlist, GPC/DNT headers, preview/forwarded-host/query rejection, admin exclusion and QA isolation |
 
-Total: **90 passing checks**, all rerun for the final release. Automated tests use VM/browser stubs and do not contact Google or send emails. Separate browser integration tests below contact only the QA property. The UI/API suites require Node's `--experimental-vm-modules` flag.
+Total: **100 passing checks**, all rerun October 8. Automated tests use VM/browser stubs and do not contact Google or send emails. Separate browser integration tests below contact only the QA property. The UI/API suites require Node's `--experimental-vm-modules` flag.
 
-Final ESLint check, production build (isolated `.next-analytics-build` output), and `git diff --check` also passed. Both Render production builds succeeded.
+Final ESLint check, production build (isolated `.next-analytics-build` output), and `git diff --check` also passed. Both previous October 7 Render production builds succeeded.
 
-## Browser checks
+## Automatic-tracking browser checks — October 8
+
+Real local Next app through a loopback-only QA proxy, desktop 1280×900 and mobile 390×844. Actual Google requests use only `G-RH4SHPZS5E`. The proxy intercepts form writes; no emails, customer records or bookings are created.
+
+- Fresh QA visitor: no saved preference, no automatic popup, one collector and one page view. `_ga` and the QA-specific cookie appeared; no fabricated accepted-consent record was stored.
+- Desktop Next.js navigation to Quote emitted one estimate click and one quote page view. Multiple field edits emitted one form start.
+- Quote failure returned the expected error and no lead. Successful retry/double-click produced one quote lead and thank-you navigation. Reloading thank-you did not create another lead.
+- Mobile contact failure/retry: failure produced no lead; successful double-click retry showed confirmation and emitted exactly one contact lead. All test writes remained simulated.
+- Saving Turn analytics on while already tracking automatically kept the same single collector and did not add a page view. A regression check now also protects the stable React effect dependencies.
+- Inspected transport URLs and batched bodies: only the QA measurement ID; no sentinel name, phone, email, private message or simulated lead ID.
+- Mobile footer opt-out removed the collector and accessible GA cookies immediately. Reload kept analytics off and showed no popup; the recorded provider-request count did not increase.
+- QA-only GPC simulation with no saved choice prevented the collector, cookies and requests; the settings panel explained the browser signal and disabled Turn analytics on. Clearing the simulated signal restored automatic collection without an opt-in record. The QA simulation cannot disable a real GPC signal.
+- Existing rejected records, including older ones, remain rejected in policy/controller tests. DNT and unavailable/malformed storage are covered by automated tests; the browser signal integration check used the QA GPC simulation.
+
+The evidence monitor observes application transport and resource activity, not full packet capture. These are viewport tests, not physical-device checks. Browser development traffic and production reporting stay separate.
+
+## Historical opt-in browser checks — October 7
 
 Real local Next app through a loopback-only QA proxy; desktop and 390×844 mobile viewport. All POST requests intercepted by the proxy: no actual emails, quotes, bookings or database writes. Analytics dry-run uses the same sanitization/consent flow but never loads Google's script.
 
@@ -86,8 +104,8 @@ Scheduling success/failure and private-route teardown are covered by automated h
 ## Follow-ups and coverage limits
 
 1. Review the privacy notice for actual retention, rights, international-transfer and vendor obligations. This is not a legal-compliance certification.
-2. Check incoming consenting customer activity in the live property. Clarity stays off unless separately approved. No live synthetic lead is needed.
+2. Check incoming customer activity with analytics enabled in the live property. Clarity stays off unless separately approved. No live synthetic lead is needed.
 3. Review processed standard reports after their 24–48-hour delay. Realtime receipt is proven; processed attribution, long-term cookie expiry and standard-report engagement totals were not independently audited here.
 4. Recommended compatibility follow-up: physical iPhone/Safari and Android, browser back/forward cache, slow-network withdrawal races, and a complete authenticated-admin browser journey. Unit coverage is not exhaustive device/network coverage.
 
-No production customer records, inboxes, bookings, DNS or account access were changed by testing. The website and analytics settings were published with approval. Analytics remains dependent on consent, blockers and network delivery; it is not a transactional source of truth.
+No production customer records, inboxes, bookings, DNS or account access were changed by testing. The October 7 website and analytics settings were published with approval; the October 8 automatic-mode deployment is pending. Analytics counts depend on privacy choices/signals, blockers and network delivery; they are not a transactional source of truth.

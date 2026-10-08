@@ -2,6 +2,9 @@
 export function qaMonitor() {
   if (!["localhost", "127.0.0.1"].includes(location.hostname)) return;
   const framed = window.parent !== window;
+  const actualGpc = navigator.globalPrivacyControl === true;
+  // QA-only browser-signal simulation; a real GPC signal can never be disabled here.
+  Object.defineProperty(navigator, "globalPrivacyControl", { configurable: true, get: () => actualGpc || sessionStorage.getItem("ajs.qa.gpc") === "1" });
   const key = "ajs.qa.network";
   const relevant = (url) => /google-analytics\.com|googletagmanager\.com|analytics\.google\.com/.test(String(url));
   function record(entry) {
@@ -14,6 +17,8 @@ export function qaMonitor() {
     const output = document.getElementById("qa-network");
     if (output) output.textContent = JSON.stringify({
       cookies: document.cookie.split(";").map((c) => c.split("=")[0].trim()).filter(Boolean),
+      preferenceRecord: localStorage.getItem("ajs.analytics-consent.v1"),
+      globalPrivacyControl: navigator.globalPrivacyControl === true,
       foreground: document.visibilityState,
       focused: document.hasFocus(),
       frameFocused: document.querySelector('iframe[src="/analytics/frame"]')?.contentDocument?.hasFocus() || false,
@@ -61,8 +66,21 @@ export function qaMonitor() {
       const label = document.createElement("summary"); label.textContent = "QA network evidence — test property only";
       const clear = document.createElement("button"); clear.textContent = "Clear QA evidence";
       clear.onclick = () => { sessionStorage.removeItem(key); render(); };
+      const fresh = document.createElement("button"); fresh.textContent = "Simulate new QA visitor";
+      fresh.onclick = () => {
+        localStorage.removeItem("ajs.analytics-consent.v1"); sessionStorage.removeItem(key);
+        for (const cookie of document.cookie.split(";")) {
+          const name = cookie.split("=")[0].trim();
+          if (name.startsWith("_ga")) document.cookie = `${name}=; Max-Age=0; Path=/; SameSite=Lax`;
+        }
+        location.reload();
+      };
+      const gpcOn = document.createElement("button"); gpcOn.textContent = "Enable QA privacy signal";
+      gpcOn.onclick = () => { sessionStorage.setItem("ajs.qa.gpc", "1"); sessionStorage.removeItem(key); location.reload(); };
+      const gpcOff = document.createElement("button"); gpcOff.textContent = "Clear QA privacy simulation";
+      gpcOff.onclick = () => { sessionStorage.removeItem("ajs.qa.gpc"); sessionStorage.removeItem(key); location.reload(); };
       const output = document.createElement("pre"); output.id = "qa-network";
-      panel.append(label, clear, output); document.body.appendChild(panel); render();
+      panel.append(label, clear, fresh, gpcOn, gpcOff, output); document.body.appendChild(panel); render();
       setInterval(render, 500);
     });
   }

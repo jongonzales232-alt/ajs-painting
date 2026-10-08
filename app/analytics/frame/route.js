@@ -1,6 +1,6 @@
 import { analyticsConfig } from "../../../lib/analytics-config";
 import { analyticsFrame } from "../../../lib/analytics-frame.mjs";
-import { PAGES } from "../../../lib/analytics-policy.mjs";
+import { PAGES, analyticsPreference } from "../../../lib/analytics-policy.mjs";
 import { isAdmin } from "../../../lib/auth";
 
 export const dynamic = "force-dynamic";
@@ -13,8 +13,8 @@ export async function GET(request) {
   const hostAllowed = config.test || config.qa
     ? /^(localhost|127\.0\.0\.1)(:\d{1,5})?$/.test(authority)
     : /^(ajspaintingtx\.com|www\.ajspaintingtx\.com)(:443)?$/.test(authority);
-  if ((!config.enabled && !config.test) || !hostAllowed || url.search || await isAdmin()) return new Response(null, { status: 404 });
-  const code = `(${analyticsFrame.toString()})(${JSON.stringify({ id: config.id, test: config.test, qa: config.qa, pages: PAGES })})`;
+  if ((!config.enabled && !config.test) || !hostAllowed || url.search || request.headers.get("sec-gpc") === "1" || request.headers.get("dnt") === "1" || await isAdmin()) return new Response(null, { status: 404 });
+  const code = `(${analyticsFrame.toString()})(${JSON.stringify({ id: config.id, test: config.test, qa: config.qa, pages: PAGES })},${analyticsPreference.toString()})`;
   return new Response(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="referrer" content="no-referrer"><title>AJ's Painting analytics</title></head><body><script>${code}</script></body></html>`, {
     headers: {
       "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store",

@@ -3,21 +3,22 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { CONSENT_KEY, browserConsent, publicPath, safeReferrer, cleanEvent, serviceLabel, engagementClock } from "../lib/analytics-policy.mjs";
+import { CONSENT_KEY, browserAnalyticsPreference, analyticsAllowed, publicPath, safeReferrer, cleanEvent, serviceLabel, engagementClock } from "../lib/analytics-policy.mjs";
 
 export default function AnalyticsConsent({ enabled, test, qa = false }) {
   const pathname = usePathname();
   const [choice, setChoice] = useState(undefined);
   const [open, setOpen] = useState(false);
   const [events, setEvents] = useState([]);
+  const collectionAllowed = analyticsAllowed(choice);
   const engine = useRef(null);
   const trigger = useRef(null);
   const panel = useRef(null);
 
   useEffect(() => {
-    setChoice(browserConsent());
-    const click = (event) => { const button = event.target.closest?.("[data-privacy-settings]"); if (button) { trigger.current = button; setOpen(true); } };
-    const sync = (event) => { if (event.key === CONSENT_KEY || event.key === null) { const next = browserConsent(); if (next !== "accepted") engine.current?.stop(); setChoice(next); } };
+    setChoice(browserAnalyticsPreference());
+    const click = (event) => { const button = event.target.closest?.("[data-privacy-settings]"); if (button) { trigger.current = button; setChoice(browserAnalyticsPreference()); setOpen(true); } };
+    const sync = (event) => { if (event.key === CONSENT_KEY || event.key === null) { const next = browserAnalyticsPreference(); if (!analyticsAllowed(next)) engine.current?.stop(); setChoice(next); } };
     document.addEventListener("click", click);
     window.addEventListener("storage", sync);
     return () => { document.removeEventListener("click", click); window.removeEventListener("storage", sync); };
@@ -26,7 +27,7 @@ export default function AnalyticsConsent({ enabled, test, qa = false }) {
 
   useEffect(() => {
     const allowedHost = test || qa ? ["localhost", "127.0.0.1"].includes(location.hostname) : ["ajspaintingtx.com", "www.ajspaintingtx.com"].includes(location.hostname);
-    if (choice !== "accepted" || browserConsent() !== "accepted" || (!enabled && !test) || !allowedHost) return;
+    if (!collectionAllowed || !analyticsAllowed(browserAnalyticsPreference()) || (!enabled && !test) || !allowedHost) return;
     let frame = null, ready = false, queue = [], lastPath = null, sequence = 0;
     const starts = new Set(), leads = new Set();
     const referrer = safeReferrer(document.referrer);
@@ -34,7 +35,7 @@ export default function AnalyticsConsent({ enabled, test, qa = false }) {
     let engagedOnPage = false;
     function sample() {
       const focused = Boolean(document.hasFocus?.());
-      clock.sample(Boolean(frame && document.visibilityState === "visible" && focused && browserConsent() === "accepted"), Date.now());
+      clock.sample(Boolean(frame && document.visibilityState === "visible" && focused && analyticsAllowed(browserAnalyticsPreference())), Date.now());
       if (qa && frame) frame.dataset.qaEngagement = JSON.stringify({ focused, visibility: document.visibilityState, elapsed: clock.amount() });
     }
     function stop() {
@@ -44,7 +45,7 @@ export default function AnalyticsConsent({ enabled, test, qa = false }) {
       clock.reset(Date.now());
     }
     function send(name, extra = {}, path = location.pathname) {
-      if (browserConsent() !== "accepted") { stop(); return false; }
+      if (!analyticsAllowed(browserAnalyticsPreference())) { stop(); return false; }
       sample();
       const event = cleanEvent(name, path, extra);
       if (!event || !frame) return false;
@@ -60,7 +61,7 @@ export default function AnalyticsConsent({ enabled, test, qa = false }) {
       if (lastPath && path !== lastPath) flushEngagement();
       if (!frame) {
         frame = document.createElement("iframe");
-        frame.hidden = true; frame.title = "Consented analytics";
+        frame.hidden = true; frame.title = "Website analytics";
         frame.setAttribute("aria-hidden", "true"); frame.tabIndex = -1;
         frame.referrerPolicy = "no-referrer"; frame.src = "/analytics/frame";
         document.body.appendChild(frame);
@@ -69,7 +70,7 @@ export default function AnalyticsConsent({ enabled, test, qa = false }) {
     }
     function flushEngagement() { sample(); if (lastPath && clock.amount() > 0) send("site_engagement", {}, lastPath); }
     function onMessage(message) {
-      if (!frame || message.source !== frame.contentWindow || message.origin !== location.origin || browserConsent() !== "accepted") return;
+      if (!frame || message.source !== frame.contentWindow || message.origin !== location.origin || !analyticsAllowed(browserAnalyticsPreference())) return;
       if (message.data?.type === "ajs-analytics-ready") {
         ready = true;
         queue.splice(0).forEach((entry) => frame.contentWindow?.postMessage(entry, location.origin));
@@ -111,7 +112,8 @@ export default function AnalyticsConsent({ enabled, test, qa = false }) {
     window.addEventListener("focus", sample);
     window.addEventListener("pagehide", flushEngagement);
     const consentTimer = setInterval(() => {
-      if (browserConsent() !== "accepted") { stop(); setChoice(null); return; }
+      const next = browserAnalyticsPreference();
+      if (!analyticsAllowed(next)) { stop(); setChoice(next); return; }
       sample();
       if (!engagedOnPage && clock.amount() >= 10000) { engagedOnPage = true; flushEngagement(); }
     }, 1000);
@@ -128,12 +130,14 @@ export default function AnalyticsConsent({ enabled, test, qa = false }) {
       window.removeEventListener("focus", sample);
       window.removeEventListener("pagehide", flushEngagement);
     };
-  }, [choice, enabled, test, qa]);
+  // Saving "on" while already automatic must not restart the collector/double-count a view.
+  }, [collectionAllowed, enabled, test, qa]);
   useEffect(() => { engine.current?.route(); }, [pathname]);
 
   function choose(next) {
+    if (next === "accepted" && browserAnalyticsPreference() === "signal") return;
     if (next === "rejected") engine.current?.stop();
-    try { localStorage.setItem(CONSENT_KEY, JSON.stringify({ version: 1, choice: next, at: Date.now() })); } catch { /* Storage unavailable: optional tracking stays off. */ }
+    try { localStorage.setItem(CONSENT_KEY, JSON.stringify({ version: 1, choice: next, at: Date.now() })); } catch { engine.current?.stop(); setChoice("unavailable"); return; }
     if (next === "rejected") {
       const domains = ["", location.hostname, "." + location.hostname, "ajspaintingtx.com", ".ajspaintingtx.com"];
       for (const cookie of document.cookie.split(";")) {
@@ -143,17 +147,19 @@ export default function AnalyticsConsent({ enabled, test, qa = false }) {
         }
       }
     }
-    setChoice(next); setOpen(false); trigger.current?.focus?.();
+    setChoice(browserAnalyticsPreference()); setOpen(false); trigger.current?.focus?.();
   }
-  const show = publicPath(pathname) && (open || choice === null);
+  const show = publicPath(pathname) && open;
   return <>
     {show && <section ref={panel} tabIndex={-1} className="analytics-consent" aria-labelledby="analytics-heading" data-clarity-mask="true">
       <h2 id="analytics-heading">Your privacy choices</h2>
-      <p>With your permission, Google Analytics helps us understand visits and inquiries. Optional analytics stays off until you accept. Forms and booking work either way. No advertising tracking or session replays.</p>
-      {open && <p>Current choice: {choice === "accepted" ? "analytics accepted" : "optional analytics off"}. Reject optional also withdraws earlier consent.</p>}
+      <p>Google Analytics runs automatically to help us understand visits and inquiries, unless you opt out or your browser sends a privacy signal. Forms and booking work either way. No advertising tracking or session replays.</p>
+      <p>Current setting: {analyticsAllowed(choice) && (enabled || test) ? "analytics on" : "analytics off"}.</p>
+      {choice === "signal" && <p>Your browser&apos;s Global Privacy Control or Do Not Track setting keeps analytics off. Change that browser setting before turning analytics on here.</p>}
+      {choice === "unavailable" && <p>We couldn&apos;t read or save your privacy preference. Analytics stays off while browser storage is unavailable or the saved preference is invalid.</p>}
       <div className="consent-actions">
-        <button type="button" onClick={() => choose("accepted")}>Accept analytics</button>
-        <button type="button" onClick={() => choose("rejected")}>Reject optional</button>
+        <button type="button" onClick={() => choose("accepted")} disabled={choice === "signal" || (!enabled && !test)}>Turn analytics on</button>
+        <button type="button" onClick={() => choose("rejected")}>Turn analytics off</button>
       </div>
       <Link href="/privacy">Read our privacy notice</Link>
       {open && <button className="consent-close" type="button" onClick={() => { setOpen(false); trigger.current?.focus?.(); }}>Close without changing</button>}

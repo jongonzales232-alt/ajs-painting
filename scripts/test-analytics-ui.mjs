@@ -15,23 +15,23 @@ function emitter() {
   const listeners = new Map();
   return { addEventListener(type, fn) { if (!listeners.has(type)) listeners.set(type, new Set()); listeners.get(type).add(fn); }, removeEventListener(type, fn) { listeners.get(type)?.delete(fn); }, emit(type, event) { for (const fn of listeners.get(type) || []) fn(event); } };
 }
-async function component(filename, { consent = "accepted", response = { ok: true, id: "fixture-lead", email: { sent: true, owner: { sent: true }, customer: { sent: true } } }, ok = true } = {}) {
+async function component(filename, { consent = "accepted", signals = {}, privacyOpen = false, storageBlocked = false, response = { ok: true, id: "fixture-lead", email: { sent: true, owner: { sent: true }, customer: { sent: true } } }, ok = true } = {}) {
   let stateIndex = 0, consentValue = consent, fetched = 0, resets = 0;
-  const effects = [], events = [], routes = [], frames = [], messages = [];
+  const effects = [], effectDependencies = [], events = [], routes = [], frames = [], messages = [], preferenceWrites = [];
   const location = { origin: "https://ajspaintingtx.com", hostname: "ajspaintingtx.com", pathname: "/quote" };
-  const storage = { getItem: () => consentValue ? JSON.stringify({ version: 1, choice: consentValue, at: Date.now() }) : null, setItem: (key, value) => { consentValue = JSON.parse(value).choice; } };
+  const storage = { getItem: () => { if (storageBlocked) throw Error("blocked"); return consentValue ? JSON.stringify({ version: 1, choice: consentValue, at: Date.now() }) : null; }, setItem: (key, value) => { if (storageBlocked) throw Error("blocked"); preferenceWrites.push({ key, value }); consentValue = JSON.parse(value).choice; } };
   const win = { ...emitter(), localStorage: storage };
   const doc = { ...emitter(), referrer: "https://www.google.com/search?q=PRIVATE", cookie: "", visibilityState: "visible", createElement() {
     const frame = { setAttribute() {}, contentWindow: { postMessage: (msg) => messages.push(msg) }, remove() { frame.removed = true; } };
     frames.push(frame); return frame;
   }, body: { appendChild() {} } };
-  const hooks = { useState: (initial) => [stateIndex++ === 0 && filename === "AnalyticsConsent.js" ? consent : initial, () => {}], useRef: (value) => ({ current: value }), useEffect: (fn) => effects.push(fn) };
+  const hooks = { useState: (initial) => { const index = stateIndex++; return [filename === "AnalyticsConsent.js" ? index === 0 ? policy.analyticsPreference(storage, signals) : index === 1 ? privacyOpen : initial : initial, () => {}]; }, useRef: (value) => ({ current: value }), useEffect: (fn, deps) => { effects.push(fn); effectDependencies.push(deps); } };
   const context = vm.createContext({ window: win, document: doc, location, localStorage: storage, URL, Date, setInterval: () => 1, clearInterval() {}, crypto: { randomUUID: () => "fixture-contact" }, FormData: class { constructor() {} get() { return "fixture"; } delete() {} append() {} *[Symbol.iterator]() {} }, fetch: async () => { fetched++; return { ok, status: ok ? 200 : 503, json: async () => response }; }, console });
   const mocks = {
     react: hooks, "react/jsx-runtime": { jsx: (type, props) => ({ type, props }), jsxs: (type, props) => ({ type, props }), Fragment: "fragment" },
     "next/link": { default: "a" }, "next/navigation": { usePathname: () => location.pathname, useRouter: () => ({ push: (url) => routes.push(url) }) },
     "../lib/analytics-client": { trackFormStart: (type) => events.push(["form_start", type]), trackLead: (...args) => events.push(["generate_lead", ...args]) },
-    "../lib/analytics-policy.mjs": { ...policy, browserConsent: () => consentValue },
+    "../lib/analytics-policy.mjs": { ...policy, browserAnalyticsPreference: () => policy.analyticsPreference(storage, signals) },
     "../lib/prepare-quote-photo": { prepareQuotePhoto() {} }, "../lib/quote-photos": { MAX_QUOTE_PHOTOS: 20 }, "../lib/quote-fields": { PROJECT_TYPES: [], PROJECT_SURFACES: {} }
   };
   const source = await fs.readFile(path.join(root, "components", filename), "utf8");
@@ -45,7 +45,7 @@ async function component(filename, { consent = "accepted", response = { ok: true
   const tree = mod.namespace.default({ enabled: true, test: false, slots: [] });
   function find(node, predicate) { if (!node || typeof node !== "object") return; if (predicate(node)) return node; for (const child of [node.props?.children].flat(Infinity)) { const found = find(child, predicate); if (found) return found; } }
   const cleanup = effects.map((fn) => fn()).filter((fn) => typeof fn === "function");
-  return { tree, find, events, routes, frames, messages, effects, win, doc, location, cleanup, reject: () => { consentValue = "rejected"; }, fetched: () => fetched, resets: () => resets,
+  return { tree, find, events, routes, frames, messages, preferenceWrites, effects, effectDependencies, win, doc, location, cleanup, reject: () => { consentValue = "rejected"; }, fetched: () => fetched, resets: () => resets,
     submit: async () => { const form = find(tree, (node) => node.type === "form"); return form.props.onSubmit({ preventDefault() {}, currentTarget: { reset() { resets++; } } }); },
     ready: () => win.emit("message", { source: frames.at(-1)?.contentWindow, origin: location.origin, data: { type: "ajs-analytics-ready" } }) };
 }
@@ -65,8 +65,38 @@ await check("rapid duplicate form submits do not double-send or double-count", a
 await check("malformed 200 responses never clear quote/contact forms or count leads", async () => {
   for (const file of ["QuoteForm.js", "ContactForm.js", "ScheduleForm.js"]) { const h = await component(file, { response: {} }); await h.submit(); assert.equal(h.events.length, 0); assert.equal(h.resets(), 0); assert.equal(h.routes.length, 0); }
 });
-await check("controller does not create any frame before consent or after rejection", async () => {
-  for (const consent of [null, "rejected"]) { const h = await component("AnalyticsConsent.js", { consent }); assert.equal(h.frames.length, 0); h.cleanup.forEach((fn) => fn()); }
+await check("new visitors automatically track without a popup or an invented opt-in", async () => {
+  const h = await component("AnalyticsConsent.js", { consent: null }); h.ready();
+  assert.equal(h.frames.length, 1); assert.equal(h.messages.length, 1); assert.equal(h.messages[0].event.name, "page_view");
+  assert.equal(h.find(h.tree, (node) => node.type === "section"), undefined);
+  assert.equal(h.preferenceWrites.length, 0); h.cleanup.forEach((fn) => fn());
+});
+await check("controller keeps tracking off for old rejection, GPC, DNT and blocked storage", async () => {
+  for (const options of [{ consent: "rejected" }, { consent: null, signals: { globalPrivacyControl: true } }, { signals: { doNotTrack: "1" } }, { storageBlocked: true }]) {
+    const h = await component("AnalyticsConsent.js", options); assert.equal(h.frames.length, 0); h.cleanup.forEach((fn) => fn());
+  }
+});
+await check("saving on while already automatic does not restart the collector effect", async () => {
+  const automatic = await component("AnalyticsConsent.js", { consent: null, privacyOpen: true });
+  const accepted = await component("AnalyticsConsent.js", { consent: "accepted" });
+  const rejected = await component("AnalyticsConsent.js", { consent: "rejected" });
+  // React only restarts this effect when its dependency values change.
+  assert.deepEqual(Array.from(automatic.effectDependencies[2]), Array.from(accepted.effectDependencies[2]));
+  assert.notDeepEqual(Array.from(automatic.effectDependencies[2]), Array.from(rejected.effectDependencies[2]));
+  for (const h of [automatic, accepted, rejected]) h.cleanup.forEach((fn) => fn());
+});
+await check("footer opt-out stops automatic tracking and persists the explicit rejection", async () => {
+  const h = await component("AnalyticsConsent.js", { consent: null, privacyOpen: true }); h.ready();
+  const off = h.find(h.tree, (node) => node.type === "button" && node.props.children === "Turn analytics off");
+  off.props.onClick(); assert.equal(h.frames[0].removed, true);
+  assert.equal(JSON.parse(h.preferenceWrites.at(-1).value).choice, "rejected");
+  const count = h.messages.length; h.ready(); assert.equal(h.messages.length, count); h.cleanup.forEach((fn) => fn());
+});
+await check("privacy signal cannot be overridden with the footer analytics-on button", async () => {
+  const h = await component("AnalyticsConsent.js", { signals: { globalPrivacyControl: true }, privacyOpen: true });
+  const on = h.find(h.tree, (node) => node.type === "button" && node.props.children === "Turn analytics on");
+  assert.equal(on.props.disabled, true); on.props.onClick();
+  assert.equal(h.preferenceWrites.length, 0); assert.equal(h.frames.length, 0); h.cleanup.forEach((fn) => fn());
 });
 await check("one view per path transition, same-route/query rerenders do not duplicate", async () => {
   const h = await component("AnalyticsConsent.js"); h.ready(); assert.equal(h.messages.length, 1);

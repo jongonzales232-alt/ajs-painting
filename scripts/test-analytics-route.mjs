@@ -2,14 +2,14 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import vm from "node:vm";
 import { analyticsFrame } from "../lib/analytics-frame.mjs";
-import { PAGES } from "../lib/analytics-policy.mjs";
+import { PAGES, analyticsPreference } from "../lib/analytics-policy.mjs";
 
 const source = fs.readFileSync(new URL("../app/analytics/frame/route.js", import.meta.url), "utf8")
   .replace(/^import .*;\r?$/gm, "").replace(/^export /gm, "");
 let config = { enabled: true, test: false, qa: false, id: "G-UNITTEST" };
 let admin = false;
 const context = vm.createContext({
-  URL, Response, analyticsFrame, PAGES,
+  URL, Response, analyticsFrame, analyticsPreference, PAGES,
   analyticsConfig: () => config, isAdmin: async () => admin
 });
 vm.runInContext(source, context);
@@ -46,6 +46,10 @@ await check("production collector is blocked on loopback and bind address", asyn
 });
 await check("query-bearing requests are excluded", async () => {
   assert.equal((await context.GET(request("ajspaintingtx.com", "/analytics/frame?email=synthetic@example.test"))).status, 404);
+});
+await check("GPC and Do Not Track headers block the collector", async () => {
+  for (const header of ["sec-gpc", "dnt"])
+    assert.equal((await context.GET(request("ajspaintingtx.com", "/analytics/frame", { [header]: "1" }))).status, 404);
 });
 await check("signed-in administrators are excluded", async () => {
   admin = true;

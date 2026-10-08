@@ -1,6 +1,6 @@
 # AJ's Painting analytics — owner guide
 
-Updated October 7, 2026. **Published on [ajspaintingtx.com](https://ajspaintingtx.com/) with your approval.** Live application commit: `12f1ca2`.
+Updated October 8, 2026. The owner requested automatic public-site analytics without an automatic popup. This update is tested and ready for deployment to [ajspaintingtx.com](https://ajspaintingtx.com/); the previous opt-in release was `12f1ca2`.
 
 ## Your account and launch settings
 
@@ -14,7 +14,7 @@ Updated October 7, 2026. **Published on [ajspaintingtx.com](https://ajspaintingt
 - Advertising personalization disallowed in all 307 available regions. No Ads integration or remarketing enabled.
 - User and event retention: 2 months; reset on new user activity off. Aggregated standard reports are not governed by that short user/event retention setting.
 
-These server environment settings are now saved on the **ajs-painting** Render service and the site has been rebuilt/deployed. Do not paste Google's generic snippet into the site; that would bypass this consent implementation and duplicate events.
+These server environment settings are already saved on the **ajs-painting** Render service. The automatic-tracking update needs a code deployment, not new settings. Do not paste Google's generic snippet into the site; that would bypass the privacy controls and duplicate events.
 
 ```
 ANALYTICS_ENABLED=true
@@ -42,26 +42,27 @@ Sign in to the property above. In each report, use the date picker at the top ri
 
 | Event | Meaning |
 |---|---|
-| `page_view` | One accepted-consent view per public path transition or full-page reload. Query/hash-only changes do not create extra views. |
+| `page_view` | One view per public path transition or full-page reload while analytics is on. Query/hash-only changes do not create extra views. |
 | `phone_click` / `email_click` | Clicks on phone/email links; destination phone/email values are not sent. |
 | `estimate_click` | A link to /quote or /schedule; not the Submit button. |
-| `form_start` | First field change in a quote, contact or scheduling form during that page visit after consent. |
+| `form_start` | First field change in a quote, contact or scheduling form during that page visit while analytics is on. |
 | `generate_lead` | Quote/appointment saved successfully, or contact message accepted by the email service. Email acceptance is not proof of inbox delivery. A saved quote counts even if its notification is delayed. |
 | `site_engagement` | Actual foreground time sent on interactions/transitions and once after ten seconds per page. No recurring keep-alive; background time excluded. The blank collector cannot measure focus itself. |
 
-Already configured: **Admin → Data display → Custom definitions** has the event-scoped dimensions **Form type** (`form_type`) and **Service type** (`service_type`). **Admin → Data display → Events** has `generate_lead` marked as a key event, counted once per event, with no assumed monetary value. It uses the website's explicit event code, not a derived page-view rule. Do not make an automatic event from form clicks, form_submit, or /thank-you views. Phone clicks remain distinct from completed leads. Data will accumulate as consenting visitors use the published site.
+Already configured: **Admin → Data display → Custom definitions** has the event-scoped dimensions **Form type** (`form_type`) and **Service type** (`service_type`). **Admin → Data display → Events** has `generate_lead` marked as a key event, counted once per event, with no assumed monetary value. It uses the website's explicit event code, not a derived page-view rule. Do not make an automatic event from form clicks, form_submit, or /thank-you views. Phone clicks remain distinct from completed leads. Data will accumulate as visitors with analytics enabled use the published site.
 
-Keep Enhanced Measurement entirely off (including browser-history pageviews, form interactions, outbound clicks, site search and downloads). Do not enable Google Signals, advertising personalization, user-provided data, cross-domain linking, remarketing or Ads integrations. Review any future Google tag/Tag Manager changes before publishing; the isolated collector and consent gate must remain the only analytics loader.
+Keep Enhanced Measurement entirely off (including browser-history pageviews, form interactions, outbound clicks, site search and downloads). Do not enable Google Signals, advertising personalization, user-provided data, cross-domain linking, remarketing or Ads integrations. Review any future Google tag/Tag Manager changes before publishing; the isolated collector and privacy gate must remain the only analytics loader.
 
 ## Privacy and limitations
 
-- Visitors must actively accept. Reject optional is equally prominent. Footer → Privacy choices lets them withdraw without losing filled-in form fields.
-- The choice is stored for 180 days. Accessible Google analytics cookies are removed on withdrawal; already transmitted information is not recalled. A request already sent cannot be unsent.
+- Analytics starts automatically on eligible public visits, without an automatic popup. Footer → Privacy choices offers equally prominent Turn analytics on / Turn analytics off controls without losing filled-in form fields. Automatic visitors are not recorded as having explicitly opted in.
+- Existing rejections stay rejected, including older ones. An opt-out remains in this browser until changed or site storage is cleared. Clearing site storage can reset the choice; analytics cookies themselves have a 180-day limit. Accessible analytics cookies are removed when the visitor turns analytics off; already transmitted information cannot be recalled.
+- Global Privacy Control and Do Not Track keep analytics off, even after a previous opt-in. The footer cannot override those browser signals. Missing or unwritable browser storage and invalid saved preferences fail closed. Signed-in administrators and private paths are excluded.
 - Only fixed public page paths/titles, fixed service categories and approved broad referring sources are used. Query strings, fragments, UTM values, ad click IDs, form text, photos, booking/lead IDs and arbitrary referrer hosts are not sent. This deliberately sacrifices campaign detail; some real referrals will appear as direct/unknown.
-- Google still receives technical connection data when accepted, including IP/browser information. This is minimized analytics, not a claim of anonymity.
+- Google still receives technical connection data while analytics is on, including IP/browser information. This is minimized analytics, not a claim of anonymity.
 - People who reject, block scripts, change devices or clear cookies affect counts. Bots can inflate visits despite provider filtering. Do not equate GA counts with your actual inbox or quote database.
 - New analytics cannot reconstruct visits that were never recorded. Reports can take 24–48 hours to populate. A new property showing zero before launch is expected.
-- The new /privacy page explains hosting, inquiry processing, consent and optional analytics. **Legal review remains required** for actual retention policies, international transfers, applicable privacy rights, vendor agreements and the wording appropriate to this business. No automatic legal-compliance claim is made.
+- The /privacy page explains hosting, inquiry processing, automatic analytics and opt-out controls. **Legal review remains required**, including whether automatic GA4 collection is appropriate for the site's visitors, any applicable consent requirements, retention policies, international transfers, privacy rights and vendor agreements. Small-business status is not treated as a blanket exemption. No automatic legal-compliance claim is made.
 
 ## Microsoft Clarity — optional, NOT enabled
 
@@ -81,11 +82,11 @@ Before a later implementation: choose Strict masking in the Clarity dashboard, u
 
 With your approval, a separate **AJ's Painting — QA TEST ONLY** property was created: property **558046405**, stream **16064715017**, ID **G-RH4SHPZS5E**. [Open the test property](https://analytics.google.com/analytics/web/#/a411238046p558046405/). Its numbers are not customer activity. It has two-month retention without reset, Enhanced Measurement/Signals/user-provided collection off, and ad personalization disallowed everywhere.
 
-Real Google requests were inspected from the local website. QA Realtime confirmed two simulated quote leads and one simulated contact lead, sessions, page views, starts and engagement. All form writes were intercepted; no emails or bookings were created. No test traffic went to the live ID.
+Real Google requests were inspected from the local website. October 7 QA Realtime confirmed two simulated quote leads and one simulated contact lead, sessions, page views, starts and engagement. October 8 testing rechecked automatic collection without a popup, quote/contact failure and success, opt-out/reload and a simulated browser privacy signal against the same QA property. All form writes were intercepted; no emails or bookings were created. No test traffic went to the live ID.
 
 The local real-provider switch is development-only, locked to the exact QA ID and loopback hosts. The evidence panel is injected only by `scripts/analytics-qa-proxy.mjs`, never by the deployed application. Production ignores the QA environment switch. No extra hosted website or paid service was created.
 
-**The analytics update is live.** All 90 automated checks and the production build passed. Render confirmed the final deployment; the live collector serves the correct production ID, and desktop/mobile rejection, reload, navigation, privacy choices and public form-page checks passed. A Render-specific hostname issue was found and corrected before launch verification was completed. No synthetic inquiry was submitted to the live site; accepted-consent transport was tested against the separate QA property. Confirm actual incoming activity as customers opt in. Standard reports can take 24–48 hours to process. Review the privacy notice with an appropriate adviser; see ANALYTICS-TEST-RESULTS.md for the full evidence and remaining coverage limits.
+**Automatic-tracking update: ready for deployment.** All 100 automated checks, ESLint and the production build passed. Desktop/mobile QA proved automatic collection with no popup, preserved privacy choices, successful-lead-only counting and no test customer data in the inspected analytics payloads. The October 7 release already included the verified Render hostname correction. No synthetic inquiry was submitted to the live site; transport tests used the separate QA property. Confirm actual incoming customer activity after deployment. Standard reports can take 24–48 hours to process. Review the privacy notice with an appropriate adviser; see ANALYTICS-TEST-RESULTS.md for the evidence and remaining coverage limits.
 
 ## Sources
 
