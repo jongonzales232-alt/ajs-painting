@@ -44,6 +44,7 @@ export default async function ContactPage() {
             <Link className="text-link" href="/schedule">Or schedule an estimate</Link>
             {businessImage ? <SafeImage
               className="contact-business-image"
+              sizes="(max-width: 860px) calc(100vw - 96px), 504px"
               src={businessImage.url}
               alt={businessImage.alt || "AJ's Painting business photo"}
             /> : null}

@@ -29,7 +29,7 @@ export default async function GalleryPage() {
               <article className="gallery-card" key={photo.id}>
                 <SafeImage src={photo.url} alt={photo.title || "Completed painting job"} />
                 <div className="gallery-card-body">
-                  <h3>{photo.title || "Completed project"}</h3>
+                  <h2>{photo.title || "Completed project"}</h2>
                   {photo.description ? <p>{photo.description}</p> : null}
                   <small>
                     {[photo.jobType, photo.jobDate ? new Date(photo.jobDate).toLocaleDateString() : ""].filter(Boolean).join(" - ")}

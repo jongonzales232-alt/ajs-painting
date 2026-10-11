@@ -490,13 +490,16 @@ textarea {
 .gallery-card img,
 .gallery-placeholder {
   width: 100%;
+  height: auto;
   aspect-ratio: 4 / 3;
-  object-fit: cover;
-  background: linear-gradient(135deg, var(--charcoal), var(--brand-blue));
+  /* Keep the full approved composition, including ceiling edges and blurs. */
+  object-fit: contain;
+  background: var(--soft);
 }
 
 .contact-business-image {
   width: 100%;
+  height: auto;
   aspect-ratio: 4 / 3;
   object-fit: cover;
   border-radius: 6px;
@@ -507,6 +510,7 @@ textarea {
   padding: 16px;
 }
 
+.gallery-card h2,
 .gallery-card h3 {
   margin: 0 0 6px;
   font-size: 18px;
