@@ -2,10 +2,9 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { publicImageSources } from "../lib/public-image-paths.mjs";
 
-// Only published local images may use the public optimizer. Authenticated
-// quote photos must keep their direct, cookie-bearing requests.
-const publicImage = /^\/uploads\/(gallery|site)\/[a-zA-Z0-9_-]+\.(jpe?g|png|webp|gif)$/i;
+// Authenticated quote photos keep direct, cookie-bearing requests.
 const gallerySizes = "(max-width: 860px) calc(100vw - 40px), (max-width: 1180px) calc((100vw - 76px) / 3), 368px";
 
 export default function SafeImage(props) {
@@ -20,6 +19,13 @@ function ImageWithFallback({ src, alt, className, sizes = gallerySizes }) {
     return <div className={`gallery-placeholder ${className || ""}`} role="img" aria-label={alt ? `${alt} — image unavailable` : "Image unavailable"} />;
   }
 
+  const sources = publicImageSources(src);
+  if (sources) {
+    // Prepared on upload/startup; visitors never trigger resizing.
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img className={className} {...sources} alt={alt} width={800} height={600}
+      sizes={sizes} loading="lazy" decoding="async" onError={() => setFailed(true)} />;
+  }
   return <Image className={className} src={src} alt={alt} width={800} height={600}
-    sizes={sizes} unoptimized={!publicImage.test(src)} onError={() => setFailed(true)} />;
+    sizes={sizes} unoptimized onError={() => setFailed(true)} />;
 }

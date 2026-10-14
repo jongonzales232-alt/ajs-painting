@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs/promises";
 import vm from "node:vm";
 import { createRequire } from "node:module";
+import * as publicImagePaths from "../lib/public-image-paths.mjs";
 const require = createRequire(import.meta.url);
 const { transform } = require("next/dist/build/swc");
 const { hasLocalMatch } = require("next/dist/shared/lib/match-local-pattern");
@@ -13,6 +14,7 @@ const context = vm.createContext({});
 const mocks = {
   react: { useState: () => [failed, (value) => { failed = value; }] },
   "next/image": { default: "img" },
+  "../lib/public-image-paths.mjs": publicImagePaths,
   "react/jsx-runtime": { jsx: (type, props, key) => ({ type, props, key }) }
 };
 const source = await fs.readFile(new URL("../components/SafeImage.js", import.meta.url), "utf8");
@@ -28,7 +30,8 @@ function check(name, fn) { failed = false; fn(); passed++; console.log("PASS", n
 check("public gallery and business photos get responsive optimized sources", () => {
   for (const src of ["/uploads/gallery/123-photo.jpg", "/uploads/site/123-photo.webp"]) {
     const image = render({ src, alt: "Finished project" });
-    assert.equal(image.props.unoptimized, false);
+    assert.match(image.props.src, /\.v1-768\.webp$/);
+    assert.match(image.props.srcSet, /1920w/);
     assert.ok(image.props.sizes.includes("860px"));
     assert.ok(hasLocalMatch(config.images.localPatterns, src));
   }
@@ -39,8 +42,8 @@ check("private, legacy, remote and query-bearing images never enter public optim
     assert.equal(hasLocalMatch(config.images.localPatterns, src), false);
   }
 });
-check("brand logo remains allowed by the optimizer", () => {
-  assert.ok(hasLocalMatch(config.images.localPatterns, "/brand/ajs-painting-logo-v3.png"));
+check("runtime optimizer is disabled; the brand logo is generated at build time", () => {
+  assert.equal(config.images.unoptimized, true);
 });
 check("errors produce an accessible fallback, and replacement sources remount it", () => {
   const props = { src: "/uploads/gallery/old.jpg", alt: "Ceiling", className: "test" };

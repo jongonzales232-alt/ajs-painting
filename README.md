@@ -110,6 +110,20 @@ node --experimental-vm-modules scripts/test-quote.mjs
 
 Gallery images are stored locally under `public/uploads` and are public. Customer quote photos are stored locally under `storage/uploads` and are only served through protected admin routes.
 
+### Memory-safe public image delivery on Render
+
+Use `npm ci && npm run render:build` as the build command and **`bash scripts/render-start.sh`** as the Render start command. The direct shell command replaces itself with Next.js after preparation, avoiding resident npm/npx/Node wrappers. `npm run render:start` remains usable but retains npm's own process.
+
+Startup synchronizes the existing schema, seeds availability if empty, and prepares public gallery/site variants sequentially before starting the web server. Originals remain on the persistent upload disk. Existing variants are reused on later restarts. An unreadable/unsupported old image is logged and served as a streamed original when possible; it does not prevent the whole site starting.
+
+New public uploads prepare 384, 768, 1280 and 1920px WebP variants before returning their URL. Jobs run one at a time in short-lived processes with bounded Sharp concurrency and input pixels, so native allocations are released on exit. GIFs and animated WebP files retain their original animation. Private quote photos never enter this pipeline. Deletion/replacement cleans up the corresponding variants.
+
+Public requests stream files with backpressure, immutable cache headers and conditional GET/HEAD support. Missing derivatives fall back to the original with `no-store`; they never trigger image processing. The Next.js runtime image optimizer is disabled. The logo is resized once during the build.
+
+To backfill public variants manually, run `npm run images:prepare` with the correct `PUBLIC_UPLOAD_ROOT`. Do not run it concurrently with another backfill. If variant dimensions/encoding change, bump the `.v1-` filename version to preserve immutable caching semantics.
+
+Image tests: `npm run test:images` and `node --experimental-vm-modules scripts/test-gallery-images.mjs`. Tests create only synthetic local files.
+
 For production, replace both local upload locations with durable object storage such as S3, Cloudflare R2, or Vercel Blob before deploying at scale.
 
 ## Launch Checklist

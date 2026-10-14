@@ -11,3 +11,4 @@ public/uploads/*
 !public/uploads/.gitkeep
 storage/uploads/*
 !storage/uploads/.gitkeep
+public/brand/ajs-painting-logo-v3-small.webp

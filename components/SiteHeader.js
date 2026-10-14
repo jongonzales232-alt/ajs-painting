@@ -20,7 +20,7 @@ export default function SiteHeader() {
         <Link className="brand" href="/">
           <Image
             className="brand-logo"
-            src="/brand/ajs-painting-logo-v3.png"
+            src="/brand/ajs-painting-logo-v3-small.webp"
             alt="AJ's Painting — Your Project. Our Priority."
             width={240}
             height={160}

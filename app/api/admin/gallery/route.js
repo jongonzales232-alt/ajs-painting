@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
-import fs from "fs/promises";
 import { requireAdmin } from "../../../../lib/admin-request";
 import { prisma } from "../../../../lib/prisma";
-import { getPublicUploadPath, saveUpload } from "../../../../lib/upload";
+import { removePublicUpload, saveUpload } from "../../../../lib/upload";
 
 export const runtime = "nodejs";
 
@@ -35,7 +34,7 @@ export async function POST(request) {
       return NextResponse.json({ photos });
     } catch (error) {
       await Promise.all(
-        uploads.map((upload) => fs.unlink(getPublicUploadPath("gallery", upload.filename)).catch(() => {}))
+        uploads.map((upload) => removePublicUpload("gallery", upload.filename).catch(() => {}))
       );
       throw error;
     }
@@ -72,7 +71,7 @@ export async function PATCH(request) {
 
     if (replacement && existing.filename) {
       try {
-        await fs.unlink(getPublicUploadPath("gallery", existing.filename));
+        await removePublicUpload("gallery", existing.filename);
       } catch (error) {
         if (error.code !== "ENOENT") {
           console.error("Old gallery file cleanup failed.", { id, filename: existing.filename, error: error.message });
@@ -96,7 +95,7 @@ export async function DELETE(request) {
   try {
     const photo = await prisma.galleryPhoto.delete({ where: { id } });
     try {
-      await fs.unlink(getPublicUploadPath("gallery", photo.filename));
+      await removePublicUpload("gallery", photo.filename);
     } catch (error) {
       if (error.code !== "ENOENT") {
         console.error("Gallery file cleanup failed.", { id, filename: photo.filename, error: error.message });

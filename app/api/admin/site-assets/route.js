@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
-import fs from "fs/promises";
 import { requireAdmin } from "../../../../lib/admin-request";
 import { prisma } from "../../../../lib/prisma";
-import { getPublicUploadPath, saveUpload } from "../../../../lib/upload";
+import { removePublicUpload, saveUpload } from "../../../../lib/upload";
 
 export const runtime = "nodejs";
 
@@ -39,7 +38,7 @@ export async function PATCH(request) {
 
     if (existing?.filename) {
       try {
-        await fs.unlink(getPublicUploadPath("site", existing.filename));
+        await removePublicUpload("site", existing.filename);
       } catch (error) {
         if (error.code !== "ENOENT") {
           console.error("Old site image cleanup failed.", { key, filename: existing.filename, error: error.message });
