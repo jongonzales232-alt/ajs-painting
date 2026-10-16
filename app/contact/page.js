@@ -6,8 +6,9 @@ import { getBusinessDetails } from "../../lib/business";
 import Link from "next/link";
 
 export const metadata = {
-  title: "Contact",
-  description: "Contact AJ's Painting by phone, email, or contact form."
+  title: "Contact Your Local Painting Contractor",
+  description: "Call AJ's Painting at (254) 205-0950 for painting in Waco, Hillsboro and Whitney. Request a free estimate for your home or business.",
+  alternates: { canonical: "/contact" }
 };
 
 export const dynamic = "force-dynamic";

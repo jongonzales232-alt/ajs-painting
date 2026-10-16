@@ -31,6 +31,7 @@ export default function SiteFooter() {
         <nav className="footer-links" aria-label="Footer navigation">
           <Link href="/about">About Us</Link>
           <Link href="/services">Services</Link>
+          <Link href="/#service-areas">Service Areas</Link>
           <Link href="/gallery">Gallery</Link>
           <Link href="/#reviews">Reviews</Link>
           <Link href="/schedule">Schedule</Link>

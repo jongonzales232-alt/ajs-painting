@@ -1,18 +1,15 @@
 import PublicLayout from "../../components/PublicLayout";
 import Link from "next/link";
+import { paintingServices } from "../../lib/painting-services";
 
 export const metadata = {
-  title: "Residential & Commercial Painting Services",
-  description: "Interior painting, exterior painting, cabinet painting, fence and deck staining, drywall prep, pressure washing, residential painting, and commercial painting."
+  title: "Painting Services in Waco, Hillsboro & Whitney",
+  description: "Explore interior, exterior, cabinet, commercial painting and fence or deck staining in Waco, Hillsboro and Whitney. Free estimates from AJ's Painting.",
+  alternates: { canonical: "/services" }
 };
 
 const services = [
   ["Residential painting", "Reliable painting for bedrooms, living areas, kitchens, exteriors, rentals, and move-in projects."],
-  ["Commercial painting", "Simple scheduling and clean job sites for offices, storefronts, and small commercial spaces."],
-  ["Interior painting", "Walls, ceilings, trim, doors, accent walls, and occupied-home protection."],
-  ["Exterior painting", "Siding, trim, shutters, doors, scraping, caulking, and weather-ready coatings."],
-  ["Cabinet painting", "Careful cleaning, prep, priming, and finish work for kitchens, baths, and built-ins."],
-  ["Fence and deck staining or painting", "Refresh exterior wood surfaces with stain or paint after proper prep."],
   ["Drywall patching and minor prep work", "Small patches, sanding, nail pops, cracks, and surface preparation before paint."],
   ["Pressure washing and prep work", "Wash and prep surfaces so paint adheres properly and lasts longer."]
 ];
@@ -23,15 +20,30 @@ export default function ServicesPage() {
       <section className="page-title">
         <div className="container">
           <p className="eyebrow">Prepared properly. Finished carefully.</p>
-          <h1>Residential &amp; Commercial Painting</h1>
-          <p>Painting for homes, rental properties, offices, storefronts, and small commercial spaces. Founder Felipe brings more than 27 years of hands-on experience to your interior or exterior project.</p>
+          <h1>Painting services in Waco, Hillsboro &amp; Whitney</h1>
+          <p>Painting for homes, rental properties, offices, storefronts, and small commercial spaces across Central Texas. Founder Felipe brings more than 27 years of hands-on experience to your interior or exterior project.</p>
         </div>
       </section>
       <section className="section">
-        <div className="container grid grid-2">
+        <div className="container">
+          <div className="section-title"><h2>Explore our painting services</h2><p>Find out what is included, how we prepare and what to share when requesting an estimate.</p></div>
+          <div className="grid grid-2">
+            {paintingServices.map((service) => (
+              <article className="service-card" key={service.slug}>
+                <h3><Link href={`/services/${service.slug}`}>{service.name}</Link></h3>
+                <p>{service.summary}</p>
+                <Link className="text-link service-card-link" href={`/services/${service.slug}`}>Learn about {service.name.toLowerCase()}</Link>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+      <section className="section section-soft">
+        <div className="container"><div className="section-title"><h2>Surfaces and preparation we cover</h2></div></div>
+        <div className="container grid grid-3">
           {services.map(([title, text]) => (
             <article className="service-card" key={title}>
-              <h2>{title}</h2>
+              <h3>{title}</h3>
               <p>{text}</p>
             </article>
           ))}

@@ -5,16 +5,17 @@ import { getBusinessDetails } from "../lib/business";
 import { prisma } from "../lib/prisma";
 
 export const metadata = {
-  title: { absolute: "AJ's Painting | Residential & Commercial Painting" },
-  description: "Request a free quote from AJ's Painting for residential and commercial interior and exterior painting."
+  title: { absolute: "Painters in Waco, Hillsboro & Whitney, TX | AJ's Painting" },
+  description: "Family-owned painting in Waco, Hillsboro and Whitney, TX. Interior, exterior, cabinet and commercial painting. Insured with free estimates. Call (254) 205-0950.",
+  alternates: { canonical: "/" }
 };
 
 export const dynamic = "force-dynamic";
 
 const services = [
-  ["Interior painting", "Clean lines, careful prep, and smooth finishes for rooms, ceilings, trim, and doors."],
-  ["Exterior painting", "Durable exterior coatings with proper washing, scraping, caulking, and protection."],
-  ["Cabinets, decks, and fences", "Refresh high-impact surfaces with paint, stain, and repair-minded prep work."]
+  ["Interior painting", "Clean lines, careful prep, and smooth finishes for rooms, ceilings, trim, and doors.", "/services/interior-painting"],
+  ["Exterior painting", "Durable exterior coatings with proper washing, scraping, caulking, and protection.", "/services/exterior-painting"],
+  ["Cabinet painting", "Refresh kitchens, bathrooms and built-ins with careful cleaning, prep, priming and painting.", "/services/cabinet-painting"]
 ];
 
 const processSteps = [
@@ -32,9 +33,9 @@ export default async function HomePage() {
       <section className="hero">
         <div className="container hero-inner">
           <p className="eyebrow">Residential &amp; Commercial Painting</p>
-          <h1>Careful prep. Clean lines. A finish built to last.</h1>
+          <h1>Painters serving Waco, Hillsboro &amp; Whitney</h1>
           <p>
-            Led by founder Felipe, who brings more than 27 years of experience. From interiors and exteriors to cabinets, decks, and fences, we bring careful preparation and a professional finish to homes and businesses.
+            Family-owned since June 2004, led by founder Felipe, who brings more than 27 years of experience. From interiors and exteriors to cabinets, decks, and fences, we bring careful preparation and a professional finish to Central Texas homes and businesses.
           </p>
           <div className="hero-actions">
             <Link className="button" href="/quote">Request a Free Quote</Link>
@@ -60,10 +61,11 @@ export default async function HomePage() {
             <p>From single rooms to full exterior repaints, AJ&apos;s Painting keeps the process clear from estimate to final walkthrough.</p>
           </div>
           <div className="grid grid-3">
-            {services.map(([title, text]) => (
+            {services.map(([title, text, href]) => (
               <article className="service-card" key={title}>
                 <h3>{title}</h3>
                 <p>{text}</p>
+                <Link className="text-link service-card-link" href={href}>Explore {title.toLowerCase()}</Link>
               </article>
             ))}
           </div>
@@ -119,6 +121,21 @@ export default async function HomePage() {
           )}
           <div className="actions" style={{ marginTop: 24 }}>
             <Link className="button-secondary" href="/gallery">View Gallery</Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="section" id="service-areas" aria-labelledby="service-areas-heading">
+        <div className="container grid grid-2">
+          <div className="section-title">
+            <p className="eyebrow">Painting across Central Texas</p>
+            <h2 id="service-areas-heading">Serving Waco, Hillsboro and Whitney</h2>
+            <p>We travel to homes and businesses for estimates and project work. We prefer to visit your property, review the surfaces and discuss the preparation before finalizing the scope.</p>
+          </div>
+          <div className="info-panel">
+            <h3>Tell us where your project is</h3>
+            <p>We also serve surrounding Central Texas communities and projects in the DFW area. Share your city and project details so we can confirm availability and arrange a visit.</p>
+            <div className="actions service-actions"><Link className="button-secondary" href="/schedule">Schedule an Estimate</Link><a className="text-link" href="sms:+12542050950">Text (254) 205-0950</a></div>
           </div>
         </div>
       </section>

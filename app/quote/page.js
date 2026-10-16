@@ -3,7 +3,8 @@ import QuoteForm from "../../components/QuoteForm";
 
 export const metadata = {
   title: "Request a Free Quote",
-  description: "Request a free painting quote from AJ's Painting and upload photos of the project area."
+  description: "Request a free painting estimate in Waco, Hillsboro or Whitney. Share your project details and photos with AJ's Painting to arrange the next step.",
+  alternates: { canonical: "/quote" }
 };
 
 export default function QuotePage() {
