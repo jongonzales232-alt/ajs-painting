@@ -5,6 +5,8 @@ import { SITE_URL } from "../lib/seo";
 
 export const metadata = {
   metadataBase: new URL(SITE_URL),
+  // Keep this public token deployed so the business retains Search Console ownership.
+  verification: { google: "bWhyIN0rCh8j_0ewAMyr0HTi6665CmjjmKBnz3oK510" },
   title: {
     default: "AJ's Painting | Waco, Hillsboro & Whitney, TX",
     template: "%s | AJ's Painting"
