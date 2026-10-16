@@ -3,7 +3,8 @@ import PublicLayout from "../../components/PublicLayout";
 
 export const metadata = {
   title: "About Us",
-  description: "Meet Felipe, founder of AJ's Painting, and learn the family story behind our residential and commercial work. Felipe brings more than 27 years of experience."
+  description: "Family-owned since June 2004, AJ's Painting serves Waco, Hillsboro and Whitney. Meet founder Felipe, with more than 27 years of painting experience.",
+  alternates: { canonical: "/about" }
 };
 
 export default function AboutPage() {
@@ -14,7 +15,7 @@ export default function AboutPage() {
           <div>
             <p className="eyebrow">About AJ&apos;s Painting · Family-owned</p>
             <h1 id="about-heading">A family name.<br />A commitment to doing it right.</h1>
-            <p className="about-lead">AJ&apos;s Painting was founded by Felipe and named after his two sons, Alan and Jonathan. For our family, the name represents the care and responsibility we bring to every project.</p>
+            <p className="about-lead">AJ&apos;s Painting was founded by Felipe in June 2004 and named after his two sons, Alan and Jonathan. For our family, the name represents the care and responsibility we bring to every project in Waco, Hillsboro, Whitney and the surrounding Central Texas communities.</p>
           </div>
           <figure className="about-motto">
             <p className="eyebrow">The way we work</p>

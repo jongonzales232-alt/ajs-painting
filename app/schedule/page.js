@@ -5,7 +5,8 @@ import Link from "next/link";
 
 export const metadata = {
   title: "Schedule an Estimate",
-  description: "Choose an available date and time for an AJ's Painting estimate appointment."
+  description: "Schedule an in-person painting estimate with AJ's Painting. Serving homes and businesses in Waco, Hillsboro, Whitney and surrounding Central Texas.",
+  alternates: { canonical: "/schedule" }
 };
 
 export const dynamic = "force-dynamic";

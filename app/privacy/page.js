@@ -1,6 +1,6 @@
 import PublicLayout from "../../components/PublicLayout";
 
-export const metadata = { title: "Privacy notice" };
+export const metadata = { title: "Privacy notice", description: "How AJ's Painting handles project inquiries, photos and optional website analytics, and how to manage your privacy choices.", alternates: { canonical: "/privacy" } };
 export default function PrivacyPage() {
   return <PublicLayout><section className="section"><article className="container privacy-notice">
     <p className="eyebrow">Your information, handled with care</p>

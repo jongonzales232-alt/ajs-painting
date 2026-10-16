@@ -5,7 +5,8 @@ import Link from "next/link";
 
 export const metadata = {
   title: "Project Gallery",
-  description: "See completed painting projects from AJ's Painting."
+  description: "Browse AJ's Painting's project gallery. Residential and commercial painting, drywall and finish work from a family-owned Central Texas contractor.",
+  alternates: { canonical: "/gallery" }
 };
 
 export const dynamic = "force-dynamic";

@@ -3,7 +3,8 @@ import PublicLayout from "../../components/PublicLayout";
 
 export const metadata = {
   title: "Thank You",
-  description: "Thank you for contacting AJ's Painting."
+  description: "Thank you for contacting AJ's Painting.",
+  robots: { index: false, follow: false }
 };
 
 export default async function ThankYouPage({ searchParams }) {
